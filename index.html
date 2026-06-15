@@ -1,0 +1,1212 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bee Pristine — Estimate Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:#f4f6f9;min-height:100vh;padding:1rem;color:#0D1B2A}
+.container{max-width:900px;margin:0 auto}
+
+/* ── HEADER ── */
+.header{background:#0D1B2A;border-radius:16px;padding:1.5rem 2rem;margin-bottom:1.25rem;text-align:center}
+.header-label{font-size:11px;font-weight:500;color:#A0B4C8;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+.header-title{font-size:26px;font-weight:600;color:#fff;margin-bottom:4px}
+.header-sub{font-size:13px;color:#A0B4C8}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:6px;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:4px}
+.tab-btn{flex:1;min-width:140px;padding:10px 14px;border-radius:12px;border:0.5px solid #E0E4EA;background:#fff;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;color:#6B7280;cursor:pointer;transition:all .15s;text-align:center;white-space:nowrap}
+.tab-btn:hover{border-color:#2A9D8F;color:#2A9D8F}
+.tab-btn.active{background:#0D1B2A;color:#fff;border-color:#0D1B2A}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── SUB TABS (service type within each tab) ── */
+.sub-tab-bar{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.sub-tab-btn{padding:7px 16px;border-radius:100px;border:0.5px solid #E0E4EA;background:#fff;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;color:#6B7280;cursor:pointer;transition:all .15s}
+.sub-tab-btn:hover{border-color:#2A9D8F;color:#2A9D8F}
+.sub-tab-btn.active{background:#2A9D8F;color:#fff;border-color:#2A9D8F}
+
+/* ── CARDS ── */
+.form-card{background:#fff;border-radius:16px;padding:1.5rem;margin-bottom:1.25rem;border:0.5px solid #E0E4EA;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.form-title{font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+label{font-size:12px;font-weight:500;color:#6B7280;text-transform:uppercase;letter-spacing:.06em}
+input[type=number],select,input[type=date]{width:100%;padding:9px 12px;border:0.5px solid #D1D5DB;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;color:#0D1B2A;background:#fff;outline:none;transition:border-color .15s}
+input[type=number]:focus,select:focus,input[type=date]:focus{border-color:#2A9D8F;box-shadow:0 0 0 3px rgba(42,157,143,0.12)}
+
+/* ── EXTRAS ── */
+.extras-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-top:4px}
+.extra-item{display:flex;align-items:center;gap:8px;padding:9px 11px;border:0.5px solid #E0E4EA;border-radius:10px;cursor:pointer;transition:all .15s}
+.extra-item:hover{border-color:#2A9D8F;background:#f0faf8}
+.extra-item.selected{border-color:#2A9D8F;background:#E8F7F5}
+.extra-item input[type=checkbox]{accent-color:#2A9D8F;width:15px;height:15px;cursor:pointer;flex-shrink:0}
+.extra-label{font-size:12px;color:#0D1B2A;flex:1}
+.extra-price{font-size:11px;font-weight:600;color:#2A9D8F;white-space:nowrap}
+
+/* ── RESULTS ── */
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem}
+.metric{background:#fff;border:0.5px solid #E0E4EA;border-radius:12px;padding:.875rem;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.metric-label{font-size:11px;color:#6B7280;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.metric-val{font-size:22px;font-weight:600;color:#0D1B2A;line-height:1.1}
+.metric-val.teal{color:#2A9D8F}
+.metric-val.amber{color:#BA7517}
+.metric-val.green{color:#0F6E56}
+.metric-note{font-size:11px;color:#9CA3AF;margin-top:3px}
+
+/* ── DETAIL CARD ── */
+.detail-card{background:#fff;border:0.5px solid #E0E4EA;border-radius:16px;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.detail-title{font-size:14px;font-weight:600;color:#0D1B2A;margin-bottom:12px;padding-bottom:10px;border-bottom:0.5px solid #E0E4EA}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid #F3F4F6;font-size:13px}
+.detail-row:last-of-type{border-bottom:none}
+.dl{color:#6B7280}
+.dv{font-weight:500;color:#0D1B2A}
+.dv.green{color:#0F6E56}
+.dv.amber{color:#BA7517}
+.dv.red{color:#A32D2D}
+.divider{height:0.5px;background:#E0E4EA;margin:8px 0}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:100px}
+.badge-teal{background:#D4EEEC;color:#0F6E56}
+.badge-amber{background:#FDF6E3;color:#854F0B}
+.badge-red{background:#FDECEA;color:#A32D2D}
+
+/* ── LABOR ── */
+.labor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:4px}
+.labor-field{display:flex;flex-direction:column;gap:4px}
+.labor-input-wrap{position:relative;display:flex;align-items:center}
+.labor-input-wrap span{position:absolute;left:11px;font-size:13px;color:#6B7280;font-weight:500}
+.labor-input-wrap input{padding-left:24px}
+.labor-note{font-size:11px;color:#9CA3AF;margin-top:2px}
+
+/* ── CREW CARD ── */
+.crew-card{background:#fff;border:0.5px solid #E0E4EA;border-radius:16px;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-top:1.25rem}
+.crew-header{font-size:14px;font-weight:600;color:#0D1B2A;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #E0E4EA}
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:10px}
+.crew-metric{background:#f4f6f9;border-radius:10px;padding:.75rem;text-align:center}
+.crew-metric-label{font-size:11px;color:#6B7280;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.crew-metric-val{font-size:18px;font-weight:600;color:#0D1B2A}
+.crew-metric-val.teal{color:#2A9D8F}
+.crew-metric-sub{font-size:11px;color:#9CA3AF;margin-top:2px}
+.cleaner-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #F3F4F6;font-size:13px}
+.cleaner-row:last-of-type{border-bottom:none}
+
+/* ── CONTRACT ── */
+.contract-card{background:#fff;border:0.5px solid #E0E4EA;border-radius:16px;padding:1.25rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-top:1.25rem}
+.contract-header{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid #E0E4EA}
+.contract-header-title{font-size:14px;font-weight:600;color:#0D1B2A}
+.contract-header-badge{font-size:11px;font-weight:500;padding:3px 10px;border-radius:100px;background:#D4EEEC;color:#0F6E56}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.date-field{display:flex;flex-direction:column;gap:4px}
+.date-label{font-size:11px;font-weight:500;color:#6B7280;text-transform:uppercase;letter-spacing:.06em}
+.duration-bar{background:#f4f6f9;border-radius:10px;padding:9px 13px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px}
+.duration-main{font-size:13px;font-weight:600;color:#0D1B2A}
+.duration-sub{font-size:12px;color:#6B7280}
+.contract-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.contract-metric{background:#f4f6f9;border-radius:10px;padding:.75rem;text-align:center}
+.contract-metric-label{font-size:11px;color:#6B7280;font-weight:500;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.contract-metric-val{font-size:18px;font-weight:600;color:#0D1B2A}
+.contract-metric-val.teal{color:#2A9D8F}
+.contract-metric-val.green{color:#0F6E56}
+.contract-metric-sub{font-size:11px;color:#9CA3AF;margin-top:2px}
+.contract-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #F3F4F6;font-size:13px}
+.contract-row:last-of-type{border-bottom:none}
+.contract-row.highlight{background:#f0faf8;margin:0 -1.25rem;padding:9px 1.25rem;border-radius:0 0 12px 12px;border-bottom:none}
+.contract-row.highlight .dl{color:#0D1B2A;font-weight:500}
+.contract-row.highlight .dv{color:#0F6E56;font-size:14px}
+
+/* ── TAX ── */
+.tax-section{margin-top:10px;padding:10px 14px;background:#f0faf8;border-radius:10px;border:0.5px solid #A8DBC8}
+.tax-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+.tax-row.total-with-tax{font-size:14px;font-weight:600;color:#0F6E56;padding-top:7px;border-top:0.5px solid #A8DBC8;margin-top:3px}
+.tax-label{color:#6B7280}
+.tax-val{font-weight:500;color:#0D1B2A}
+
+/* ── EDIT PRICE ── */
+.edit-price-wrap{display:flex;align-items:center;gap:8px;margin-top:8px;padding:9px 13px;background:#FDF6E3;border:0.5px solid #F0D080;border-radius:10px;flex-wrap:wrap}
+.edit-price-wrap label{font-size:11px;font-weight:500;color:#854F0B;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;margin:0}
+.price-input-wrap{position:relative;display:flex;align-items:center;max-width:150px}
+.price-input-wrap span{position:absolute;left:11px;font-size:13px;color:#6B7280;font-weight:500}
+.price-input-wrap input{padding-left:24px;width:100%}
+.price-note{font-size:11px;color:#9CA3AF;flex:1;min-width:100px}
+.reset-price{background:none;border:0.5px solid #D1D5DB;border-radius:8px;padding:6px 11px;font-family:'Poppins',sans-serif;font-size:11px;color:#6B7280;cursor:pointer;white-space:nowrap}
+.reset-price:hover{border-color:#2A9D8F;color:#2A9D8F}
+
+/* ── DISCOUNT ── */
+.discount-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.discount-row .field{flex:1;min-width:120px}
+.apply-btn{padding:9px 18px;background:#0D1B2A;color:#fff;border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;height:40px}
+.apply-btn:hover{background:#1B5E8A}
+.discount-applied{background:#E1F5EE;border:0.5px solid #A8DBC8;border-radius:10px;padding:9px 13px;font-size:12px;color:#0F6E56;margin-top:8px;display:none;align-items:center;justify-content:space-between}
+.discount-applied strong{font-weight:600}
+.remove-discount{background:none;border:none;color:#A32D2D;font-size:11px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:500}
+
+/* ── HOURLY MODE ── */
+.mode-banner{background:#EAF2FA;border:0.5px solid #B8D4EA;border-radius:10px;padding:9px 13px;font-size:12px;color:#1B5E8A;margin-bottom:12px}
+.mode-banner strong{font-weight:600}
+.hours-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.hours-input-wrap{position:relative;display:flex;align-items:center}
+.hours-input-wrap span{position:absolute;right:12px;font-size:11px;color:#6B7280;font-weight:500}
+.hours-input-wrap input{padding-right:38px}
+
+/* ── MISC ── */
+.placeholder{text-align:center;padding:2.5rem 1rem;color:#9CA3AF;font-size:13px;background:#fff;border:0.5px solid #E0E4EA;border-radius:16px}
+.warning-box{background:#FDF6E3;border:0.5px solid #F0D080;border-radius:10px;padding:9px 13px;font-size:12px;color:#854F0B;margin-top:10px}
+.crew-note-box{display:none;margin-top:8px;padding:7px 13px;background:#FDF6E3;border:0.5px solid #F0D080;border-radius:8px;font-size:11px;color:#854F0B}
+.time-override-wrap{display:flex;align-items:center;gap:8px;margin-top:8px;padding:9px 13px;background:#f4f6f9;border-radius:10px;flex-wrap:wrap}
+.time-override-wrap label{font-size:11px;font-weight:500;color:#6B7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;margin:0}
+.time-override-wrap input{width:75px;padding:6px 9px;border:0.5px solid #D1D5DB;border-radius:8px;font-family:'Poppins',sans-serif;font-size:13px;color:#0D1B2A;background:#fff;outline:none;text-align:center}
+.time-reset{background:none;border:0.5px solid #D1D5DB;border-radius:8px;padding:6px 11px;font-family:'Poppins',sans-serif;font-size:11px;color:#6B7280;cursor:pointer;white-space:nowrap}
+.time-reset:hover{border-color:#2A9D8F;color:#2A9D8F}
+.footer{text-align:center;margin-top:1.5rem;font-size:11px;color:#9CA3AF}
+.footer strong{color:#6B7280}
+
+@media(max-width:520px){
+  .result-grid{grid-template-columns:1fr 1fr}
+  .result-grid .metric:last-child{grid-column:1/-1}
+  .tab-btn{min-width:100px;font-size:11px}
+  .contract-grid{grid-template-columns:1fr 1fr}
+  .date-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="header-label">Bee Pristine</div>
+  <div class="header-title">Estimate Calculator</div>
+  <div class="header-sub">Home · Commercial · Events · Live profit breakdown</div>
+</div>
+
+<!-- MAIN TABS -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('home',this)">🏠 Home</button>
+  <button class="tab-btn" onclick="switchTab('commercial',this)">🏢 Commercial</button>
+  <button class="tab-btn" onclick="switchTab('smallevent',this)">🎉 Small Event</button>
+  <button class="tab-btn" onclick="switchTab('mediumevent',this)">🎊 Medium Event</button>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB: HOME -->
+<!-- ════════════════════════════════════════════ -->
+<div class="tab-content active" id="tab-home">
+
+  <div class="sub-tab-bar">
+    <button class="sub-tab-btn active" onclick="switchHomeSvc('standard',this)">Standard Clean</button>
+    <button class="sub-tab-btn" onclick="switchHomeSvc('deep',this)">Deep Cleaning</button>
+    <button class="sub-tab-btn" onclick="switchHomeSvc('movein',this)">Move In</button>
+    <button class="sub-tab-btn" onclick="switchHomeSvc('moveout',this)">Move Out</button>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Service Details</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Frequency</label>
+        <select id="h-freq" onchange="calcHome()">
+          <option value="0">One-time / As needed</option>
+          <option value="10">Monthly — 10% off</option>
+          <option value="20">Bi-Weekly — 20% off</option>
+          <option value="25">Weekly — 25% off</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Crew size</label>
+        <select id="h-crew" onchange="calcHome()">
+          <option value="auto">Auto (recommended)</option>
+          <option value="1">1 cleaner</option>
+          <option value="2">2 cleaners</option>
+          <option value="3">3 cleaners</option>
+          <option value="4">4 cleaners</option>
+        </select>
+      </div>
+    </div>
+    <div class="crew-note-box" id="h-crew-note">⚠️ Manual crew selected. Recommended: <strong id="h-rec-crew"></strong>.</div>
+  </div>
+
+  <!-- HOURLY CARD (standard/movein) -->
+  <div class="form-card" id="h-hourly-card" style="display:none;">
+    <div class="form-title" id="h-hourly-title">Estimated Job Duration</div>
+    <div class="mode-banner"><strong>Hourly rate service.</strong> Enter estimated hours based on your conversation with the client.</div>
+    <div class="hours-grid">
+      <div class="field">
+        <label>Estimated hours</label>
+        <div class="hours-input-wrap"><input type="number" id="h-hrs" value="3" min="0.5" max="24" step="0.5" oninput="calcHome()"><span>hrs</span></div>
+      </div>
+      <div class="field">
+        <label>Additional minutes</label>
+        <div class="hours-input-wrap"><input type="number" id="h-mins" value="0" min="0" max="59" step="15" oninput="calcHome()"><span>min</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOM CARD (deep/moveout) -->
+  <div class="form-card" id="h-room-card">
+    <div class="form-title">Rooms</div>
+    <div class="form-grid">
+      <div class="field"><label>Master Bed and Bath</label><select id="h-master" onchange="calcHome()"><option value="0">0</option><option value="1" selected>1</option></select></div>
+      <div class="field"><label>Bedrooms</label><select id="h-beds" onchange="calcHome()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></div>
+      <div class="field"><label>Full Bathrooms</label><select id="h-fullbaths" onchange="calcHome()"><option value="0">0</option><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+      <div class="field"><label>Half Bathrooms</label><select id="h-halfbaths" onchange="calcHome()"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="field"><label>Living Rooms</label><select id="h-living" onchange="calcHome()"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="field"><label>Dining Rooms</label><select id="h-dining" onchange="calcHome()"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Kitchens</label><select id="h-kitchen" onchange="calcHome()"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Home Offices</label><select id="h-office" onchange="calcHome()"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Game Rooms</label><select id="h-game" onchange="calcHome()"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Utility Rooms</label><select id="h-utility" onchange="calcHome()"><option value="0" selected>0</option><option value="1">1</option><option value="2">2</option></select></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Extras</div>
+    <div class="extras-grid" id="h-extras-grid"></div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Discount Code</div>
+    <div class="discount-row">
+      <div class="field"><label>Code name</label><input type="text" id="h-disc-code" placeholder="e.g. WELCOME10" oninput="this.value=this.value.toUpperCase()"></div>
+      <div class="field" style="max-width:130px;"><label>Percentage off</label><div class="hours-input-wrap"><input type="number" id="h-disc-pct" placeholder="0" min="1" max="100" step="1"><span>%</span></div></div>
+      <button class="apply-btn" onclick="applyHomeDiscount()">Apply</button>
+    </div>
+    <div class="discount-applied" id="h-disc-applied"><span>✅ <strong id="h-disc-text"></strong> applied</span><button class="remove-discount" onclick="removeHomeDiscount()">Remove</button></div>
+  </div>
+
+  <div class="form-card" id="h-labor-card">
+    <div class="form-title">Labor Rate Per Cleaner</div>
+    <div id="h-labor-grid" class="labor-grid"></div>
+    <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Rates update automatically when crew size changes.</div>
+  </div>
+
+  <div id="h-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Select a service type and fill in the details to generate your estimate</div></div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB: COMMERCIAL -->
+<!-- ════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-commercial">
+
+  <div class="sub-tab-bar">
+    <button class="sub-tab-btn active" onclick="switchCommSvc('regular',this)">Standard Regular</button>
+    <button class="sub-tab-btn" onclick="switchCommSvc('deep',this)">Deep Clean</button>
+    <button class="sub-tab-btn" onclick="switchCommSvc('quarterly',this)">Quarterly Deep</button>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Space Details</div>
+    <div class="form-grid">
+      <div class="field"><label>Square footage</label><input type="number" id="c-sqft" placeholder="e.g. 2500" min="0" max="99999" step="50" oninput="calcComm()"></div>
+      <div class="field"><label>Space type</label>
+        <select id="c-space" onchange="calcComm()">
+          <option value="">Select space type</option>
+          <option value="office">Standard Office</option>
+          <option value="medical">Medical Office</option>
+          <option value="dental">Dental Office</option>
+          <option value="retail">Retail Store</option>
+          <option value="restaurant">Restaurant / Café</option>
+          <option value="gym">Gym / Fitness Center</option>
+          <option value="event">Event Venue</option>
+          <option value="warehouse">Warehouse</option>
+          <option value="school_lab">School / University Lab ⚠️</option>
+          <option value="med_lab">Medical / Research Lab ⚠️</option>
+          <option value="chem_lab">Industrial / Chemical Lab ⚠️⚠️</option>
+        </select>
+      </div>
+      <div class="field"><label>Booking frequency</label>
+        <select id="c-freq" onchange="calcComm()">
+          <option value="0">One-time / As needed</option>
+          <option value="10">Monthly — 10% off</option>
+          <option value="20">Weekly — 20% off</option>
+          <option value="22">2x per week — 22% off</option>
+          <option value="25">3x per week — 25% off</option>
+        </select>
+      </div>
+    </div>
+    <div class="time-override-wrap" id="c-time-row" style="display:none;">
+      <label>Est. hours</label>
+      <input type="number" id="c-time" min="0.5" max="99" step="0.25" oninput="onCommTimeChange()" placeholder="0.00">
+      <span style="font-size:11px;color:#9CA3AF;flex:1;">hrs (auto · edit to override)</span>
+      <button class="time-reset" onclick="resetCommTime()">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- DEEP CLEAN ROOM PARAMETERS -->
+  <div class="form-card" id="c-room-card" style="display:none;">
+    <div class="form-title">Office Parameters (Deep Clean)</div>
+    <div class="form-grid">
+      <div class="field"><label>Private Offices</label><select id="c-privateoffice" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+      <div class="field"><label>Conference Rooms</label><select id="c-conf" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+      <div class="field"><label>Kitchens / Breakrooms</label><select id="c-kitchen" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="field"><label>Standard Bathrooms</label><select id="c-stdbath" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+      <div class="field"><label>Multi User Bathrooms</label><select id="c-multibath" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="field"><label>Reception / Lobby</label><select id="c-lobby" onchange="calcComm()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+    </div>
+  </div>
+
+  <!-- COMMERCIAL EXTRAS -->
+  <div class="form-card" id="c-extras-card" style="display:none;">
+    <div class="form-title">Extras</div>
+    <div class="extras-grid" id="c-extras-grid"></div>
+  </div>
+
+  <div class="form-card" id="c-labor-card" style="display:none;">
+    <div class="form-title">Labor Rate Per Cleaner</div>
+    <div id="c-labor-grid" class="labor-grid"></div>
+    <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Rates update automatically when staff count changes.</div>
+  </div>
+
+  <div id="c-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter square footage and select a space type to generate your estimate</div></div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB: SMALL EVENT -->
+<!-- ════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-smallevent">
+
+  <div class="form-card">
+    <div class="form-title">Small Event Details — $75.00/hr · 2hr minimum</div>
+    <div class="mode-banner"><strong>Hourly rate service.</strong> Small Event Cleaning is for gatherings up to 10 to 12 guests. Enter your estimated hours.</div>
+    <div class="hours-grid">
+      <div class="field"><label>Estimated hours</label><div class="hours-input-wrap"><input type="number" id="se-hrs" value="2" min="2" max="24" step="0.5" oninput="calcSmallEvent()"><span>hrs</span></div></div>
+      <div class="field"><label>Additional minutes</label><div class="hours-input-wrap"><input type="number" id="se-mins" value="0" min="0" max="59" step="15" oninput="calcSmallEvent()"><span>min</span></div></div>
+      <div class="field"><label>Crew size</label>
+        <select id="se-crew" onchange="calcSmallEvent()">
+          <option value="1">1 cleaner</option>
+          <option value="2">2 cleaners</option>
+          <option value="3">3 cleaners</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Extras</div>
+    <div class="extras-grid" id="se-extras-grid"></div>
+  </div>
+
+  <div class="form-card" id="se-labor-card">
+    <div class="form-title">Labor Rate Per Cleaner</div>
+    <div id="se-labor-grid" class="labor-grid"></div>
+    <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Edit each cleaner individually.</div>
+  </div>
+
+  <div id="se-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Fill in the details above to generate your small event estimate</div></div>
+</div>
+
+<!-- ════════════════════════════════════════════ -->
+<!-- TAB: MEDIUM EVENT -->
+<!-- ════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-mediumevent">
+
+  <div class="form-card">
+    <div class="form-title">Medium Event Details — $255.00 base · 2 cleaners included</div>
+    <div class="mode-banner"><strong>Medium Event Cleaning</strong> is for gatherings of 13 to 30 guests. Base price includes 2 professional cleaners. Add parameters and extras below.</div>
+    <div class="form-grid">
+      <div class="field"><label>Crew size</label>
+        <select id="me-crew" onchange="calcMediumEvent()">
+          <option value="2">2 cleaners (included)</option>
+          <option value="3">3 cleaners</option>
+          <option value="4">4 cleaners</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Parameters</div>
+    <div class="form-grid">
+      <div class="field"><label>Additional Event Spaces</label><select id="me-spaces" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Bathroom Refresh</label><select id="me-bathrefresh" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+      <div class="field"><label>Multi User Bathrooms</label><select id="me-multibath" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      <div class="field"><label>Pre Event Cleaning</label><select id="me-pre" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Post Event Cleaners</label><select id="me-post" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+      <div class="field"><label>Event Stewards</label><select id="me-stewards" onchange="calcMediumEvent()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Extras</div>
+    <div class="extras-grid" id="me-extras-grid"></div>
+  </div>
+
+  <div class="form-card" id="me-labor-card">
+    <div class="form-title">Labor Rate Per Cleaner</div>
+    <div id="me-labor-grid" class="labor-grid"></div>
+    <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Edit each cleaner individually.</div>
+  </div>
+
+  <div id="me-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Fill in the details above to generate your medium event estimate</div></div>
+</div>
+
+<div class="footer">
+  <strong>Bee Pristine</strong> &nbsp;·&nbsp; 832-843-1948 &nbsp;·&nbsp; hello@beepristine.com &nbsp;·&nbsp; Houston, TX
+  <br><br>Any time beyond the scheduled service is billed at $55.00 per hour and will be reflected on your final invoice.
+</div>
+
+</div><!-- end container -->
+<script>
+// ══════════════════════════════════════════════════════════════
+// SHARED UTILITIES
+// ══════════════════════════════════════════════════════════════
+function fmt(n){return "$"+Math.round(n).toLocaleString()}
+function fmtFull(n){return "$"+n.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g,',')}
+function fmtTime(h){const hr=Math.floor(h),mn=Math.round((h-hr)*60);if(!mn)return hr+"h";if(!hr)return mn+"min";return hr+"h "+mn+"min"}
+const TAX=0.0825;
+
+function buildTaxSection(displayPrice,priceId,amtId,totalId){
+  const t=displayPrice*TAX;const w=displayPrice+t;
+  return `<div class="tax-section">
+    <div class="tax-row"><span class="tax-label">Price before tax</span><span class="tax-val" id="${priceId}">${fmtFull(displayPrice)}</span></div>
+    <div class="tax-row"><span class="tax-label">Sales tax (8.25%)</span><span class="tax-val" id="${amtId}">+ $${t.toFixed(2)}</span></div>
+    <div class="tax-row total-with-tax"><span>Total with tax</span><span id="${totalId}">${fmtFull(w)}</span></div>
+  </div>`;
+}
+
+function buildEditPrice(displayPrice,overrideFn,resetFn,inputId){
+  return `<div class="edit-price-wrap">
+    <label>Edit quote</label>
+    <div class="price-input-wrap"><span>$</span><input type="number" id="${inputId}" value="${displayPrice.toFixed(2)}" min="0" step="1" oninput="${overrideFn}(this.value)"></div>
+    <span class="price-note">Edit to override. Tax updates automatically.</span>
+    <button class="reset-price" onclick="${resetFn}()">↺ Reset</button>
+  </div>`;
+}
+
+function buildLaborInputs(crew,prefix,calcFn){
+  const grid=document.getElementById(prefix+'-labor-grid');
+  if(!grid) return;
+  const existing={};
+  for(let i=1;i<=4;i++){const el=document.getElementById(prefix+'-l'+i);if(el) existing[i]=parseFloat(el.value)||26.50;}
+  grid.innerHTML='';
+  for(let i=1;i<=crew;i++){
+    const v=(existing[i]||26.50).toFixed(2);
+    const d=document.createElement('div');d.className='labor-field';
+    d.innerHTML=`<label>Cleaner ${i}</label><div class="labor-input-wrap"><span>$</span><input type="number" id="${prefix}-l${i}" value="${v}" min="10" max="100" step="0.50" oninput="${calcFn}()"></div><div class="labor-note">per hour</div>`;
+    grid.appendChild(d);
+  }
+  const card=document.getElementById(prefix+'-labor-card');
+  if(card) card.style.display='block';
+}
+
+function getLaborRates(crew,prefix){
+  let combined=0;const details=[];
+  for(let i=1;i<=crew;i++){const el=document.getElementById(prefix+'-l'+i);const r=el?parseFloat(el.value)||26.50:26.50;combined+=r;details.push(r);}
+  return{combined,details};
+}
+
+function cleanerRows(details,adjTime){
+  return details.map((r,i)=>`<div class="cleaner-row"><span style="font-weight:500;color:#0D1B2A">Cleaner ${i+1}</span><span style="color:#6B7280">$${r.toFixed(2)}/hr · $${(r*adjTime).toFixed(2)} this job</span></div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════════
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOME CALCULATOR
+// ══════════════════════════════════════════════════════════════
+const H_SVC={
+  standard:{label:"Standard Regular Cleaning",base:55,minHrs:2,rateKey:"standard",hourly:true},
+  deep:    {label:"Deep Cleaning",            base:140,minHrs:3,rateKey:"deep",    hourly:false},
+  movein:  {label:"Move In Cleaning",         base:65, minHrs:2,rateKey:"movein",  hourly:true},
+  moveout: {label:"Move Out Cleaning",        base:180,minHrs:4,rateKey:"moveout", hourly:false}
+};
+const H_ROOMS={
+  master:   {label:"Master Bedroom and Bath",price:70,standard:70,deep:70,movein:70,moveout:70},
+  beds:     {label:"Bedroom",                price:30,standard:30,deep:30,movein:30,moveout:30},
+  fullbaths:{label:"Full Bathroom",          price:35,standard:35,deep:35,movein:35,moveout:35},
+  halfbaths:{label:"Half Bathroom",          price:20,standard:20,deep:20,movein:20,moveout:20},
+  living:   {label:"Living Room",            price:30,standard:30,deep:30,movein:30,moveout:30},
+  dining:   {label:"Dining Room",            price:22,standard:22,deep:22,movein:22,moveout:22},
+  kitchen:  {label:"Kitchen",                price:45,standard:45,deep:45,movein:45,moveout:45},
+  office:   {label:"Home Office",            price:45,standard:45,deep:45,movein:45,moveout:45},
+  game:     {label:"Game Room",              price:22,standard:22,deep:22,movein:22,moveout:22},
+  utility:  {label:"Utility Room",           price:18,standard:18,deep:18,movein:18,moveout:18}
+};
+const H_ROOM_TIME={
+  master:   {standard:1.75,deep:2.75,movein:2.0, moveout:2.5},
+  beds:     {standard:0.75,deep:1.0, movein:0.83,moveout:0.92},
+  fullbaths:{standard:0.75,deep:1.17,movein:0.92,moveout:1.0},
+  halfbaths:{standard:0.5, deep:0.67,movein:0.5, moveout:0.58},
+  living:   {standard:0.75,deep:0.92,movein:0.75,moveout:0.83},
+  dining:   {standard:0.5, deep:0.67,movein:0.58,moveout:0.63},
+  kitchen:  {standard:1.0, deep:1.5, movein:1.25,moveout:1.42},
+  office:   {standard:0.75,deep:1.0, movein:0.92,moveout:1.0},
+  game:     {standard:0.5, deep:0.75,movein:0.58,moveout:0.67},
+  utility:  {standard:0.33,deep:0.58,movein:0.42,moveout:0.5}
+};
+const H_EXTRAS=[
+  {id:"h_baseboards",   label:"Baseboards",                     price:35, time:0.67},
+  {id:"h_bathcab",      label:"Bathroom Interior Cabinets",      price:35, time:0.5},
+  {id:"h_carpet",       label:"Carpet Cleaning (per room)",      price:40, time:0.58,qty:true},
+  {id:"h_supplies",     label:"Cleaning Supplies",               price:15, time:0},
+  {id:"h_dishwasher",   label:"Dishwasher Deep Clean",           price:25, time:0.25},
+  {id:"h_doubleoven",   label:"Double Oven Cleaning",            price:75, time:1.5},
+  {id:"h_kitchencab",   label:"Kitchen Interior Cabinets",       price:55, time:0.75},
+  {id:"h_laundry",      label:"Laundry Service (per 2 loads)",   price:45, time:1.0, qty:true},
+  {id:"h_org",          label:"Organizational Help",             price:40, time:1.0},
+  {id:"h_patio_back",   label:"Back Patio",                      price:25, time:0.58},
+  {id:"h_patio_front",  label:"Front Patio",                     price:25, time:0.58},
+  {id:"h_rangeoven",    label:"Range Oven Cleaning",             price:90, time:2.0},
+  {id:"h_fridge",       label:"Refrigerator",                    price:40, time:0.75},
+  {id:"h_singleoven",   label:"Single Oven Cleaning",            price:50, time:1.0},
+  {id:"h_venetian",     label:"Venetian Blinds (per window)",    price:35, time:0.67,qty:true},
+  {id:"h_washerdryer",  label:"Washer and Dryer Deep Clean",     price:45, time:1.0},
+  {id:"h_garage_std",   label:"Garage Standard Cleaning",        price:35, time:0.42},
+  {id:"h_garage_deep",  label:"Garage Deep Cleaning",            price:50, time:0.75}
+];
+
+let hSvc='standard';
+let hDiscCode=null,hDiscPct=0;
+let hAutoPrice=0,hManualPrice=null,hLastCost=0;
+
+function switchHomeSvc(sv,btn){
+  hSvc=sv;
+  document.querySelectorAll('#tab-home .sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const svc=H_SVC[sv];
+  document.getElementById('h-hourly-card').style.display=svc.hourly?'block':'none';
+  document.getElementById('h-room-card').style.display=svc.hourly?'none':'block';
+  hManualPrice=null;
+  calcHome();
+}
+
+function getHomeRecommendedCrew(){
+  const sv=hSvc;
+  const totalBeds=parseInt(document.getElementById('h-beds').value)+parseInt(document.getElementById('h-master').value);
+  const fb=parseInt(document.getElementById('h-fullbaths').value);
+  if(sv==='standard') return totalBeds<=3&&fb<=2?1:2;
+  if(sv==='deep'){if(totalBeds<=2&&fb<=1)return 1;if(totalBeds<=4)return 2;return 3;}
+  if(totalBeds>=5)return 3;return 2;
+}
+
+function applyHomeDiscount(){
+  const code=document.getElementById('h-disc-code').value.trim();
+  const pct=parseFloat(document.getElementById('h-disc-pct').value);
+  if(!code){alert('Please enter a discount code name.');return;}
+  if(!pct||pct<=0||pct>100){alert('Please enter a valid percentage.');return;}
+  hDiscCode=code;hDiscPct=pct;
+  document.getElementById('h-disc-applied').style.display='flex';
+  document.getElementById('h-disc-text').textContent=code+' ('+pct+'% off)';
+  calcHome();
+}
+function removeHomeDiscount(){
+  hDiscCode=null;hDiscPct=0;
+  document.getElementById('h-disc-code').value='';
+  document.getElementById('h-disc-pct').value='';
+  document.getElementById('h-disc-applied').style.display='none';
+  calcHome();
+}
+function onHomePriceOverride(v){
+  const val=parseFloat(v);
+  hManualPrice=(!isNaN(val)&&val>=0)?val:null;
+  updateHomeTax();
+}
+function resetHomePrice(){
+  hManualPrice=null;
+  const el=document.getElementById('h-price-override');
+  if(el)el.value=hAutoPrice.toFixed(2);
+  updateHomeTax();
+}
+function updateHomeTax(){
+  const dp=hManualPrice!==null?hManualPrice:hAutoPrice;
+  const t=dp*TAX,w=dp+t;
+  const np=dp-hLastCost,nm=dp>0?Math.round((np/dp)*100):0;
+  const ids=['h-tax-before','h-tax-amt','h-tax-total','h-metric-quote','h-metric-tax','h-metric-profit','h-metric-margin','h-profit-row'];
+  const vals=[fmtFull(dp),'+ $'+t.toFixed(2),fmtFull(w),fmtFull(dp),'+ $'+t.toFixed(2)+' tax = '+fmtFull(w),'$'+Math.round(np).toLocaleString(),nm+'% margin','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)'];
+  ids.forEach((id,i)=>{const el=document.getElementById(id);if(el)el.textContent=vals[i];});
+  const pm=document.getElementById('h-metric-profit');
+  if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');
+}
+
+function buildHomeExtras(){
+  const grid=document.getElementById('h-extras-grid');
+  grid.innerHTML='';
+  H_EXTRAS.forEach(e=>{
+    const div=document.createElement('div');
+    div.className='extra-item';div.id='h-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="hChangeQty('${e.id}',-1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="h-qty-${e.id}" style="min-width:18px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="hChangeQty('${e.id}',1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    } else {
+      div.innerHTML=`<input type="checkbox" id="h-ex-${e.id}" onchange="calcHome()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('h-ex-'+e.id);cb.checked=!cb.checked;calcHome();}div.classList.toggle('selected',document.getElementById('h-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function hChangeQty(id,delta){
+  const el=document.getElementById('h-qty-'+id);
+  const nv=Math.max(0,(parseInt(el.textContent)||0)+delta);
+  el.textContent=nv;
+  document.getElementById('h-item-'+id).classList.toggle('selected',nv>0);
+  calcHome();
+}
+
+function calcHome(){
+  const sv=hSvc;const svc=H_SVC[sv];const rk=svc.rateKey;const isHourly=svc.hourly;
+  const freqDisc=parseInt(document.getElementById('h-freq').value)||0;
+  const freqLabel={0:"One-time",10:"Monthly (10% off)",20:"Bi-Weekly (20% off)",25:"Weekly (25% off)"}[freqDisc];
+  const crewOverride=document.getElementById('h-crew').value;
+  const recommended=isHourly?1:getHomeRecommendedCrew();
+  const crew=crewOverride!=='auto'?parseInt(crewOverride):recommended;
+  const noteEl=document.getElementById('h-crew-note');
+  if(crewOverride!=='auto'&&crew!==recommended){noteEl.style.display='block';document.getElementById('h-rec-crew').textContent=recommended+' cleaner'+(recommended>1?'s':'');}
+  else noteEl.style.display='none';
+  buildLaborInputs(crew,'h','calcHome');
+  const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'h');
+
+  let roomSubtotal=0,totalTime1=0;const roomLines=[];let estHours=0;
+  if(isHourly){
+    const hrs=parseFloat(document.getElementById('h-hrs').value)||svc.minHrs;
+    const mins=parseFloat(document.getElementById('h-mins').value)||0;
+    estHours=Math.max(hrs+(mins/60),svc.minHrs);
+    roomSubtotal=svc.base*estHours;
+    totalTime1=estHours*crew;
+  } else {
+    roomSubtotal=svc.base;
+    const roomIds=['master','beds','fullbaths','halfbaths','living','dining','kitchen','office','game','utility'];
+    roomIds.forEach(k=>{
+      const count=parseInt(document.getElementById('h-'+k).value)||0;
+      if(count>0){
+        const rp=H_ROOMS[k][rk]*count;const rt=H_ROOM_TIME[k][rk]*count;
+        roomSubtotal+=rp;totalTime1+=rt;
+        roomLines.push({label:H_ROOMS[k].label,count,price:rp,time:rt});
+      }
+    });
+    const totalRooms=rowIds=>rowIds.reduce((s,k)=>s+(parseInt(document.getElementById('h-'+k).value)||0),0);
+    const tr=totalRooms(['master','beds','fullbaths','halfbaths','living','dining','kitchen','office','game','utility']);
+    if(tr===0){document.getElementById('h-output').innerHTML='<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Select at least one room to generate your estimate</div>';return;}
+  }
+
+  let extSub=0,extTime=0;const extLines=[];
+  H_EXTRAS.forEach(e=>{
+    if(e.qty){
+      const qty=parseInt((document.getElementById('h-qty-'+e.id)||{textContent:'0'}).textContent)||0;
+      if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}
+    } else {
+      const cb=document.getElementById('h-ex-'+e.id);const item=document.getElementById('h-item-'+e.id);
+      if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}
+      else if(item)item.classList.remove('selected');
+    }
+  });
+
+  const adjTime=isHourly?Math.max(estHours+(extTime/crew),svc.minHrs):Math.max((totalTime1+extTime)/crew,svc.minHrs);
+  const laborCost=combinedRate*adjTime;
+  const totalRoomsCount=Object.keys(H_ROOMS).reduce((s,k)=>s+(parseInt((document.getElementById('h-'+k)||{value:'0'}).value)||0),0);
+  const supplies=extLines.find(e=>e.id==='h_supplies')?0:Math.round(totalRoomsCount*1.5+8);
+  const basePrice=roomSubtotal+extSub;
+  const discAmt=freqDisc>0?Math.round(basePrice*(freqDisc/100)):0;
+  const codeAmt=hDiscPct>0?Math.round((basePrice-discAmt)*(hDiscPct/100)):0;
+  const finalPrice=basePrice-discAmt-codeAmt;
+  const totalCost=laborCost+supplies;
+  const profit=finalPrice-totalCost;
+  const margin=Math.round((profit/finalPrice)*100);
+  hAutoPrice=finalPrice;hLastCost=totalCost;
+  const dp=hManualPrice!==null?hManualPrice:finalPrice;
+  const taxAmt=dp*TAX;const priceWithTax=dp+taxAmt;
+
+  const out=document.getElementById('h-output');
+  out.innerHTML=`
+    <div class="result-grid">
+      <div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="h-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="h-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div>
+      <div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaner${crew>1?'s':''} on site</div></div>
+      <div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="h-metric-profit">${fmt(profit)}</div><div class="metric-note" id="h-metric-margin">${margin}% margin</div></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-title">${svc.label} &nbsp;·&nbsp; ${isHourly?fmtTime(adjTime)+' @ $'+svc.base.toFixed(2)+'/hr':roomLines.length+' room type'+(roomLines.length>1?'s':'')}</div>
+      ${isHourly?`<div class="detail-row"><span class="dl">Hourly rate</span><span class="dv">$${svc.base.toFixed(2)}/hr</span></div><div class="detail-row"><span class="dl">Estimated time</span><span class="dv">${fmtTime(adjTime)}</span></div><div class="detail-row"><span class="dl">Hourly subtotal</span><span class="dv">${fmt(roomSubtotal)}</span></div>`:`<div class="detail-row"><span class="dl">Base service price</span><span class="dv">${fmt(svc.base)}</span></div>`}
+      ${!isHourly?roomLines.map(r=>`<div class="detail-row"><span class="dl">${r.label} (${r.count})</span><span class="dv">${fmt(r.price)}</span></div>`).join(''):''}
+      ${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Subtotal</span><span class="dv">${fmt(basePrice)}</span></div>
+      ${freqDisc>0?`<div class="detail-row"><span class="dl">Frequency discount (${freqLabel})</span><span class="dv" style="color:#0F6E56">− ${fmt(discAmt)}</span></div>`:''}
+      ${hDiscCode?`<div class="detail-row"><span class="dl">Discount code (${hDiscCode} — ${hDiscPct}% off)</span><span class="dv" style="color:#0F6E56">− ${fmt(codeAmt)}</span></div>`:''}
+      <div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(finalPrice)}</span></div>
+      ${buildEditPrice(dp,'onHomePriceOverride','resetHomePrice','h-price-override')}
+      ${buildTaxSection(dp,'h-tax-before','h-tax-amt','h-tax-total')}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaner${crew>1?'s':''} · $${combinedRate.toFixed(2)}/hr combined</span></div>
+      <div class="detail-row"><span class="dl">Time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>
+      ${cleanerRows(laborDetails,adjTime)}
+      <div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div>
+      <div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div>
+      <div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div>
+      <div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="h-profit-row">${fmt(profit)} (${margin}% margin)</span></div>
+      <div class="detail-row"><span class="dl">Booking frequency</span><span class="dv">${freqLabel}</span></div>
+      <div class="badges">
+        <span class="badge badge-teal">${crew} cleaner${crew>1?'s':''} assigned</span>
+        <span class="badge badge-teal">${fmtTime(adjTime)} on site</span>
+        ${freqDisc>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${freqDisc}% discount</span>`:''}
+        ${hDiscCode?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${hDiscCode} ${hDiscPct}% off</span>`:''}
+        ${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}
+      </div>
+    </div>
+    ${!isHourly&&crew>1?`<div class="crew-card"><div class="crew-header">Crew breakdown</div><div class="crew-grid">
+      <div class="crew-metric"><div class="crew-metric-label">Crew size</div><div class="crew-metric-val teal">${crew}</div><div class="crew-metric-sub">cleaners on site</div></div>
+      <div class="crew-metric"><div class="crew-metric-label">Time on site</div><div class="crew-metric-val">${fmtTime(adjTime)}</div><div class="crew-metric-sub">per cleaner</div></div>
+      <div class="crew-metric"><div class="crew-metric-label">1 cleaner would take</div><div class="crew-metric-val">${fmtTime(totalTime1+extTime)}</div><div class="crew-metric-sub">time saved: ${fmtTime((totalTime1+extTime)-adjTime)}</div></div>
+    </div>${cleanerRows(laborDetails,adjTime)}</div>`:''}
+    ${margin<30?'<div class="warning-box">⚠️ Margin is below 30%. Consider adjusting your pricing or crew size.</div>':''}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// COMMERCIAL CALCULATOR
+// ══════════════════════════════════════════════════════════════
+const C_RATES={office:{regular:.15,deep:.25,quarterly:.22,min:{regular:150,deep:250,quarterly:220},freq:"Weekly / Biweekly",cert:false},medical:{regular:.25,deep:.40,quarterly:.35,min:{regular:200,deep:350,quarterly:300},freq:"Daily / Weekly",cert:"OSHA 10 + Bloodborne Pathogen required"},dental:{regular:.27,deep:.44,quarterly:.38,min:{regular:200,deep:350,quarterly:300},freq:"Daily / Weekly",cert:false},retail:{regular:.15,deep:.25,quarterly:.22,min:{regular:150,deep:250,quarterly:220},freq:"Daily / Weekly",cert:false},restaurant:{regular:.20,deep:.32,quarterly:.28,min:{regular:175,deep:300,quarterly:260},freq:"Daily",cert:false},gym:{regular:.18,deep:.28,quarterly:.25,min:{regular:175,deep:275,quarterly:240},freq:"Daily / Weekly",cert:false},event:{regular:.20,deep:.32,quarterly:.28,min:{regular:200,deep:300,quarterly:260},freq:"Per event",cert:false},warehouse:{regular:.13,deep:.21,quarterly:.18,min:{regular:150,deep:200,quarterly:180},freq:"Weekly / Monthly",cert:false},school_lab:{regular:.28,deep:.45,quarterly:.38,min:{regular:250,deep:400,quarterly:340},freq:"Weekly",cert:"OSHA 10 required"},med_lab:{regular:.38,deep:.60,quarterly:.52,min:{regular:350,deep:550,quarterly:470},freq:"Daily / Weekly",cert:"OSHA 10 + Bloodborne Pathogen required"},chem_lab:{regular:.50,deep:.75,quarterly:.65,min:{regular:450,deep:700,quarterly:600},freq:"Weekly",cert:"OSHA 10 + HAZMAT Awareness required"}};
+const C_TIME={regular:{1:2.5,2:1.5,3:1.0},deep:{1:4.5,2:2.8,3:1.9},quarterly:{1:3.5,2:2.2,3:1.5}};
+const VISITS_PER_MONTH={10:1,20:4,22:8,25:12};
+const FREQ_SHORT={10:"monthly",20:"weekly",22:"2x/week",25:"3x/week"};
+
+// Office deep clean room parameters
+const C_OFFICE_PARAMS={
+  privateoffice:{label:"Private Office",   price:45, time:0.75},
+  conf:         {label:"Conference Room",  price:60, time:1.0},
+  kitchen:      {label:"Kitchen/Breakroom",price:50, time:1.0},
+  stdbath:      {label:"Standard Bathroom",price:55, time:0.75},
+  multibath:    {label:"Multi User Bathroom",price:90,time:1.5},
+  lobby:        {label:"Reception/Lobby",  price:50, time:1.0}
+};
+
+// Commercial extras (for deep clean)
+const C_EXTRAS=[
+  {id:"c_carpet",    label:"Carpet Cleaning",          price:40, time:0.58,qty:true},
+  {id:"c_fridge",    label:"Refrigerator",              price:40, time:0.75},
+  {id:"c_singleoven",label:"Single Oven Cleaning",      price:50, time:1.0},
+  {id:"c_venetian",  label:"Venetian Blinds (per window)",price:35,time:0.67,qty:true},
+  {id:"c_pickhang",  label:"Picture Hanging",           price:30, time:0.5, qty:true},
+  {id:"c_org",       label:"Organizational Help",       price:40, time:1.0},
+  {id:"c_offwin",    label:"Office Window Cleaning (per window)",price:5,time:0.33,qty:true}
+];
+
+let cSvc='regular';
+let cAutoTime=0,cManualTime=null;
+const VISITS_PM={10:1,20:4,22:8,25:12};
+
+function switchCommSvc(sv,btn){
+  cSvc=sv;
+  document.querySelectorAll('#tab-commercial .sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const isDeep=sv==='deep';
+  document.getElementById('c-room-card').style.display=isDeep?'block':'none';
+  document.getElementById('c-extras-card').style.display=isDeep?'block':'none';
+  if(isDeep)buildCommExtras();
+  cManualTime=null;
+  calcComm();
+}
+
+function buildCommExtras(){
+  const grid=document.getElementById('c-extras-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  C_EXTRAS.forEach(e=>{
+    const div=document.createElement('div');div.className='extra-item';div.id='c-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="cChangeQty('${e.id}',-1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="c-qty-${e.id}" style="min-width:18px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="cChangeQty('${e.id}',1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    } else {
+      div.innerHTML=`<input type="checkbox" id="c-ex-${e.id}" onchange="calcComm()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('c-ex-'+e.id);cb.checked=!cb.checked;calcComm();}div.classList.toggle('selected',document.getElementById('c-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function cChangeQty(id,delta){
+  const el=document.getElementById('c-qty-'+id);
+  const nv=Math.max(0,(parseInt(el.textContent)||0)+delta);
+  el.textContent=nv;document.getElementById('c-item-'+id).classList.toggle('selected',nv>0);calcComm();
+}
+
+function onCommTimeChange(){
+  const el=document.getElementById('c-time');if(!el)return;
+  const v=parseFloat(el.value);cManualTime=(!isNaN(v)&&v>0)?v:null;calcComm();
+}
+function resetCommTime(){
+  cManualTime=null;const el=document.getElementById('c-time');if(el)el.value=cAutoTime.toFixed(2);calcComm();
+}
+function cStaff(sq){return sq<1500?1:sq<3000?2:3}
+
+function calcComm(){
+  const sq=parseFloat(document.getElementById('c-sqft').value);
+  const sp=document.getElementById('c-space').value;
+  const sv=cSvc;
+  const freqDisc=parseInt(document.getElementById('c-freq').value)||0;
+  const freqLabel={0:"One-time",10:"Monthly (10% off)",20:"Weekly (20% off)",22:"2x/week (22% off)",25:"3x/week (25% off)"}[freqDisc];
+  const out=document.getElementById('c-output');
+  if(!sq||!sp||sq<=0){out.innerHTML='<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter square footage and select a space type to generate your estimate</div>';return;}
+
+  const r=C_RATES[sp];const rate=r[sv];const minC=r.min[sv];
+  const s=cStaff(sq);const raw=sq*rate;
+  const basePrice=Math.max(raw,minC);const isMin=raw<minC;
+  const discAmt=freqDisc>0?Math.round(basePrice*(freqDisc/100)):0;
+  const price=basePrice-discAmt;
+
+  cAutoTime=(sq/1000)*C_TIME[sv][s];
+  const hrs=cManualTime!==null?cManualTime:cAutoTime;
+
+  // show time override
+  const tRow=document.getElementById('c-time-row');const tEl=document.getElementById('c-time');
+  if(tRow)tRow.style.display='flex';if(tEl&&cManualTime===null)tEl.value=cAutoTime.toFixed(2);
+
+  buildLaborInputs(s,'c','calcComm');
+  const {combined:combinedRate,details:laborDetails}=getLaborRates(s,'c');
+
+  // extras for deep clean
+  let extSub=0,extTime=0;const extLines=[];
+  if(sv==='deep'){
+    C_EXTRAS.forEach(e=>{
+      if(e.qty){
+        const qty=parseInt((document.getElementById('c-qty-'+e.id)||{textContent:'0'}).textContent)||0;
+        if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}
+      } else {
+        const cb=document.getElementById('c-ex-'+e.id);const item=document.getElementById('c-item-'+e.id);
+        if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}
+        else if(item)item.classList.remove('selected');
+      }
+    });
+  }
+
+  // room parameters for deep clean
+  let paramSub=0,paramTime=0;const paramLines=[];
+  if(sv==='deep'){
+    const pKeys=['privateoffice','conf','kitchen','stdbath','multibath','lobby'];
+    pKeys.forEach(k=>{
+      const count=parseInt((document.getElementById('c-'+k)||{value:'0'}).value)||0;
+      if(count>0){
+        const pp=C_OFFICE_PARAMS[k].price*count;const pt=C_OFFICE_PARAMS[k].time*count;
+        paramSub+=pp;paramTime+=pt;
+        paramLines.push({label:C_OFFICE_PARAMS[k].label,count,price:pp});
+      }
+    });
+  }
+
+  const adjHrs=hrs+(sv==='deep'?(extTime+paramTime)/s:0);
+  const laborCost=combinedRate*adjHrs;
+  const supplies=Math.round(sq*0.003+10);
+  const totalPrice=price+paramSub+extSub;
+  const totalCost=laborCost+supplies;
+  const profit=totalPrice-totalCost;
+  const margin=Math.round((profit/totalPrice)*100);
+  const taxAmt=totalPrice*TAX;const priceWithTax=totalPrice+taxAmt;
+  const spLabel=document.getElementById('c-space').options[document.getElementById('c-space').selectedIndex].text;
+  const staffLabel=s===1?"1 cleaner":s+" cleaners";
+
+  const freqShort=FREQ_SHORT[freqDisc];
+  const visits=VISITS_PM[freqDisc];
+
+  // contract block
+  let contractHtml='';
+  if(freqDisc>0&&visits){
+    const mRev=totalPrice*visits,mPro=profit*visits,aRev=mRev*12,aPro=mPro*12;
+    const todayISO=new Date().toISOString().split('T')[0];
+    const endD=new Date();endD.setFullYear(endD.getFullYear()+1);const endISO=endD.toISOString().split('T')[0];
+    contractHtml=`<div class="contract-card">
+      <div class="contract-header"><div class="contract-header-title">Contract value — ${freqShort}</div><div class="contract-header-badge">${visits===1?'1 visit/month':visits+' visits/month'}</div></div>
+      <div class="date-row">
+        <div class="date-field"><span class="date-label">Contract start</span><input type="date" id="c-cstart" value="${todayISO}"></div>
+        <div class="date-field"><span class="date-label">Contract end</span><input type="date" id="c-cend" value="${endISO}"></div>
+      </div>
+      <div class="contract-grid">
+        <div class="contract-metric"><div class="contract-metric-label">Per visit</div><div class="contract-metric-val teal">${fmt(totalPrice)}</div><div class="contract-metric-sub">${fmt(profit)} profit</div></div>
+        <div class="contract-metric"><div class="contract-metric-label">Monthly</div><div class="contract-metric-val teal">${fmt(mRev)}</div><div class="contract-metric-sub">${fmt(mPro)} profit</div></div>
+        <div class="contract-metric"><div class="contract-metric-label">Annual</div><div class="contract-metric-val green">${fmt(aRev)}</div><div class="contract-metric-sub">${fmt(aPro)} profit</div></div>
+      </div>
+      <div class="contract-row"><span class="dl">Monthly revenue</span><span class="dv green">${fmt(mRev)}</span></div>
+      <div class="contract-row"><span class="dl">Annual revenue</span><span class="dv green">${fmt(aRev)}</span></div>
+      <div class="contract-row highlight"><span class="dl">Annual profit</span><span class="dv">${fmt(aPro)}</span></div>
+    </div>`;
+  }
+
+  const svLabel={regular:"Standard Regular",deep:"Deep Clean",quarterly:"Quarterly Deep"}[sv];
+  out.innerHTML=`
+    <div class="result-grid">
+      <div class="metric"><div class="metric-label">Estimated price</div><div class="metric-val teal">${fmt(totalPrice)}</div><div class="metric-note">+ $${taxAmt.toFixed(2)} tax = ${fmt(priceWithTax)}</div></div>
+      <div class="metric"><div class="metric-label">Estimated time</div><div class="metric-val">${fmtTime(adjHrs)}</div><div class="metric-note">${staffLabel}</div></div>
+      <div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}">${fmt(profit)}</div><div class="metric-note">${margin}% margin</div></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-title">${svLabel} — ${sq.toLocaleString()} sq ft · ${spLabel}</div>
+      <div class="detail-row"><span class="dl">Rate per sq ft</span><span class="dv">$${rate.toFixed(2)}/sq ft</span></div>
+      <div class="detail-row"><span class="dl">Base price</span><span class="dv">${fmt(raw)}</span></div>
+      ${isMin?`<div class="detail-row"><span class="dl">Minimum charge applied</span><span class="dv amber">${fmt(minC)}</span></div>`:''}
+      ${freqDisc>0?`<div class="detail-row"><span class="dl">Frequency discount (${freqLabel})</span><span class="dv" style="color:#0F6E56">− ${fmt(discAmt)}</span></div>`:''}
+      ${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}
+      ${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Price before tax</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>
+      <div class="tax-section">
+        <div class="tax-row"><span class="tax-label">Price before tax</span><span class="tax-val">${fmt(totalPrice)}</span></div>
+        <div class="tax-row"><span class="tax-label">Sales tax (8.25%)</span><span class="tax-val">+ $${taxAmt.toFixed(2)}</span></div>
+        <div class="tax-row total-with-tax"><span>Total with tax</span><span>${fmt(priceWithTax)}</span></div>
+      </div>
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Staff assigned</span><span class="dv">${staffLabel} · $${combinedRate.toFixed(2)}/hr combined</span></div>
+      <div class="detail-row"><span class="dl">Estimated time</span><span class="dv">${fmtTime(adjHrs)}</span></div>
+      ${cleanerRows(laborDetails,adjHrs)}
+      <div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div>
+      <div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div>
+      <div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div>
+      <div class="detail-row"><span class="dl">Your profit</span><span class="dv green">${fmt(profit)} (${margin}% margin)</span></div>
+      <div class="detail-row"><span class="dl">Recommended frequency</span><span class="dv">${r.freq}</span></div>
+      ${r.cert?`<div class="detail-row"><span class="dl">Certification required</span><span class="dv red">${r.cert}</span></div>`:''}
+      <div class="badges">
+        <span class="badge badge-teal">${staffLabel}</span>
+        ${freqDisc>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${freqDisc}% discount</span>`:''}
+        ${r.cert?'<span class="badge badge-red">Certification required</span>':''}
+        ${isMin?'<span class="badge badge-amber">Minimum charge applied</span>':''}
+      </div>
+    </div>
+    ${contractHtml}`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SMALL EVENT CALCULATOR
+// ══════════════════════════════════════════════════════════════
+const SE_EXTRAS=[
+  {id:"se_attendant",  label:"Event Setup Attendant",          price:55, time:1.0},
+  {id:"se_steward",    label:"Event Steward",                  price:80, time:2.0},
+  {id:"se_table",      label:"Table Setup and Breakdown",      price:15, time:0.33,qty:true},
+  {id:"se_singleoven", label:"Single Oven Cleaning",           price:50, time:1.0},
+  {id:"se_supplies",   label:"Cleaning Supplies",              price:15, time:0}
+];
+
+let seAutoPrice=0,seManualPrice=null,seLastCost=0;
+
+function onSEPriceOverride(v){const val=parseFloat(v);seManualPrice=(!isNaN(val)&&val>=0)?val:null;updateSETax();}
+function resetSEPrice(){seManualPrice=null;const el=document.getElementById('se-price-override');if(el)el.value=seAutoPrice.toFixed(2);updateSETax();}
+function updateSETax(){
+  const dp=seManualPrice!==null?seManualPrice:seAutoPrice;
+  const t=dp*TAX,w=dp+t;const np=dp-seLastCost,nm=dp>0?Math.round((np/dp)*100):0;
+  [['se-tax-before',fmtFull(dp)],['se-tax-amt','+ $'+t.toFixed(2)],['se-tax-total',fmtFull(w)],
+   ['se-metric-quote',fmtFull(dp)],['se-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],
+   ['se-metric-profit','$'+Math.round(np).toLocaleString()],['se-metric-margin',nm+'% margin'],
+   ['se-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']
+  ].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  const pm=document.getElementById('se-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');
+}
+
+function buildSEExtras(){
+  const grid=document.getElementById('se-extras-grid');grid.innerHTML='';
+  SE_EXTRAS.forEach(e=>{
+    const div=document.createElement('div');div.className='extra-item';div.id='se-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="seChangeQty('${e.id}',-1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="se-qty-${e.id}" style="min-width:18px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="seChangeQty('${e.id}',1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    } else {
+      div.innerHTML=`<input type="checkbox" id="se-ex-${e.id}" onchange="calcSmallEvent()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('se-ex-'+e.id);cb.checked=!cb.checked;calcSmallEvent();}div.classList.toggle('selected',document.getElementById('se-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function seChangeQty(id,delta){
+  const el=document.getElementById('se-qty-'+id);const nv=Math.max(0,(parseInt(el.textContent)||0)+delta);
+  el.textContent=nv;document.getElementById('se-item-'+id).classList.toggle('selected',nv>0);calcSmallEvent();
+}
+
+function calcSmallEvent(){
+  const BASE_RATE=75;const MIN_HRS=2;
+  const hrs=parseFloat(document.getElementById('se-hrs').value)||MIN_HRS;
+  const mins=parseFloat(document.getElementById('se-mins').value)||0;
+  const crew=parseInt(document.getElementById('se-crew').value)||1;
+  const estHours=Math.max(hrs+(mins/60),MIN_HRS);
+
+  buildLaborInputs(crew,'se','calcSmallEvent');
+  const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'se');
+
+  let extSub=0,extTime=0;const extLines=[];
+  SE_EXTRAS.forEach(e=>{
+    if(e.qty){
+      const qty=parseInt((document.getElementById('se-qty-'+e.id)||{textContent:'0'}).textContent)||0;
+      if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}
+    } else {
+      const cb=document.getElementById('se-ex-'+e.id);const item=document.getElementById('se-item-'+e.id);
+      if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}
+      else if(item)item.classList.remove('selected');
+    }
+  });
+
+  const adjTime=Math.max(estHours+(extTime/crew),MIN_HRS);
+  const basePrice=BASE_RATE*estHours;const totalPrice=basePrice+extSub;
+  const laborCost=combinedRate*adjTime;const supplies=15;
+  const totalCost=laborCost+supplies;
+  const profit=totalPrice-totalCost;const margin=Math.round((profit/totalPrice)*100);
+  seAutoPrice=totalPrice;seLastCost=totalCost;
+  const dp=seManualPrice!==null?seManualPrice:totalPrice;
+  const taxAmt=dp*TAX;const priceWithTax=dp+taxAmt;
+
+  const out=document.getElementById('se-output');
+  out.innerHTML=`
+    <div class="result-grid">
+      <div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="se-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="se-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div>
+      <div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaner${crew>1?'s':''} on site</div></div>
+      <div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="se-metric-profit">${fmt(profit)}</div><div class="metric-note" id="se-metric-margin">${margin}% margin</div></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-title">Small Event Cleaning · ${fmtTime(adjTime)} @ $${BASE_RATE.toFixed(2)}/hr</div>
+      <div class="detail-row"><span class="dl">Hourly rate</span><span class="dv">$${BASE_RATE.toFixed(2)}/hr</span></div>
+      <div class="detail-row"><span class="dl">Estimated time</span><span class="dv">${fmtTime(estHours)}</span></div>
+      <div class="detail-row"><span class="dl">Hourly subtotal</span><span class="dv">${fmt(basePrice)}</span></div>
+      ${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>
+      ${buildEditPrice(dp,'onSEPriceOverride','resetSEPrice','se-price-override')}
+      ${buildTaxSection(dp,'se-tax-before','se-tax-amt','se-tax-total')}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaner${crew>1?'s':''} · $${combinedRate.toFixed(2)}/hr combined</span></div>
+      <div class="detail-row"><span class="dl">Time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>
+      ${cleanerRows(laborDetails,adjTime)}
+      <div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div>
+      <div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div>
+      <div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div>
+      <div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="se-profit-row">${fmt(profit)} (${margin}% margin)</span></div>
+      <div class="badges">
+        <span class="badge badge-teal">${crew} cleaner${crew>1?'s':''} assigned</span>
+        <span class="badge badge-teal">${fmtTime(adjTime)} on site</span>
+        ${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MEDIUM EVENT CALCULATOR
+// ══════════════════════════════════════════════════════════════
+const ME_PARAMS={
+  spaces:     {label:"Additional Event Space/Room",price:80, time:1.5},
+  bathrefresh:{label:"Bathroom Refresh",           price:25, time:0.75},
+  multibath:  {label:"Multi User Bathroom",        price:90, time:1.5},
+  pre:        {label:"Pre Event Cleaning",         price:75, time:1.5},
+  post:       {label:"Post Event Cleaners",        price:90, time:1.5},
+  stewards:   {label:"Event Stewards",             price:95, time:2.5}
+};
+const ME_EXTRAS=[
+  {id:"me_setupsteward",label:"Event Setup Steward",           price:55, time:1.0},
+  {id:"me_table",       label:"Table Setup and Breakdown",     price:15, time:0.33,qty:true},
+  {id:"me_supplies",    label:"Cleaning Supplies",             price:15, time:0},
+  {id:"me_org",         label:"Organizational Help",           price:40, time:1.0}
+];
+
+let meAutoPrice=0,meManualPrice=null,meLastCost=0;
+
+function onMEPriceOverride(v){const val=parseFloat(v);meManualPrice=(!isNaN(val)&&val>=0)?val:null;updateMETax();}
+function resetMEPrice(){meManualPrice=null;const el=document.getElementById('me-price-override');if(el)el.value=meAutoPrice.toFixed(2);updateMETax();}
+function updateMETax(){
+  const dp=meManualPrice!==null?meManualPrice:meAutoPrice;
+  const t=dp*TAX,w=dp+t;const np=dp-meLastCost,nm=dp>0?Math.round((np/dp)*100):0;
+  [['me-tax-before',fmtFull(dp)],['me-tax-amt','+ $'+t.toFixed(2)],['me-tax-total',fmtFull(w)],
+   ['me-metric-quote',fmtFull(dp)],['me-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],
+   ['me-metric-profit','$'+Math.round(np).toLocaleString()],['me-metric-margin',nm+'% margin'],
+   ['me-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']
+  ].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  const pm=document.getElementById('me-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');
+}
+
+function buildMEExtras(){
+  const grid=document.getElementById('me-extras-grid');grid.innerHTML='';
+  ME_EXTRAS.forEach(e=>{
+    const div=document.createElement('div');div.className='extra-item';div.id='me-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="meChangeQty('${e.id}',-1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="me-qty-${e.id}" style="min-width:18px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="meChangeQty('${e.id}',1)" style="width:24px;height:24px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    } else {
+      div.innerHTML=`<input type="checkbox" id="me-ex-${e.id}" onchange="calcMediumEvent()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('me-ex-'+e.id);cb.checked=!cb.checked;calcMediumEvent();}div.classList.toggle('selected',document.getElementById('me-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function meChangeQty(id,delta){
+  const el=document.getElementById('me-qty-'+id);const nv=Math.max(0,(parseInt(el.textContent)||0)+delta);
+  el.textContent=nv;document.getElementById('me-item-'+id).classList.toggle('selected',nv>0);calcMediumEvent();
+}
+
+function calcMediumEvent(){
+  const BASE=255;
+  const crew=parseInt(document.getElementById('me-crew').value)||2;
+
+  buildLaborInputs(crew,'me','calcMediumEvent');
+  const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'me');
+
+  // parameters
+  let paramSub=0,paramTime=0;const paramLines=[];
+  const pKeys=['spaces','bathrefresh','multibath','pre','post','stewards'];
+  pKeys.forEach(k=>{
+    const count=parseInt((document.getElementById('me-'+k)||{value:'0'}).value)||0;
+    if(count>0){
+      const pp=ME_PARAMS[k].price*count;const pt=ME_PARAMS[k].time*count;
+      paramSub+=pp;paramTime+=pt;paramLines.push({label:ME_PARAMS[k].label,count,price:pp});
+    }
+  });
+
+  // extras
+  let extSub=0,extTime=0;const extLines=[];
+  ME_EXTRAS.forEach(e=>{
+    if(e.qty){
+      const qty=parseInt((document.getElementById('me-qty-'+e.id)||{textContent:'0'}).textContent)||0;
+      if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}
+    } else {
+      const cb=document.getElementById('me-ex-'+e.id);const item=document.getElementById('me-item-'+e.id);
+      if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}
+      else if(item)item.classList.remove('selected');
+    }
+  });
+
+  const totalPrice=BASE+paramSub+extSub;
+  const adjTime=Math.max((paramTime+extTime)/crew,1);
+  const laborCost=combinedRate*adjTime;const supplies=20;
+  const totalCost=laborCost+supplies;
+  const profit=totalPrice-totalCost;const margin=Math.round((profit/totalPrice)*100);
+  meAutoPrice=totalPrice;meLastCost=totalCost;
+  const dp=meManualPrice!==null?meManualPrice:totalPrice;
+  const taxAmt=dp*TAX;const priceWithTax=dp+taxAmt;
+
+  const out=document.getElementById('me-output');
+  out.innerHTML=`
+    <div class="result-grid">
+      <div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="me-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="me-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div>
+      <div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaners on site</div></div>
+      <div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="me-metric-profit">${fmt(profit)}</div><div class="metric-note" id="me-metric-margin">${margin}% margin</div></div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-title">Medium Event Cleaning · ${crew} cleaners · up to 30 guests</div>
+      <div class="detail-row"><span class="dl">Base price (2 cleaners included)</span><span class="dv">${fmt(BASE)}</span></div>
+      ${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}
+      ${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>
+      ${buildEditPrice(dp,'onMEPriceOverride','resetMEPrice','me-price-override')}
+      ${buildTaxSection(dp,'me-tax-before','me-tax-amt','me-tax-total')}
+      <div class="divider"></div>
+      <div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaners · $${combinedRate.toFixed(2)}/hr combined</span></div>
+      <div class="detail-row"><span class="dl">Est. time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>
+      ${cleanerRows(laborDetails,adjTime)}
+      <div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div>
+      <div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div>
+      <div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div>
+      <div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="me-profit-row">${fmt(profit)} (${margin}% margin)</span></div>
+      <div class="badges">
+        <span class="badge badge-teal">${crew} cleaners assigned</span>
+        <span class="badge badge-teal">${fmtTime(adjTime)} on site</span>
+        ${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}
+      </div>
+    </div>`;
+}
+
+// ── INIT ──
+buildHomeExtras();
+buildSEExtras();
+buildMEExtras();
+switchHomeSvc('standard',document.querySelector('#tab-home .sub-tab-btn'));
+calcHome();
+calcSmallEvent();
+calcMediumEvent();
+</script>
+</body>
+</html>
