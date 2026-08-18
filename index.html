@@ -168,7 +168,6 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   <button class="tab-btn" onclick="switchTab('smallevent',this)">🎉 Small Event</button>
   <button class="tab-btn" onclick="switchTab('mediumevent',this)">🎊 Medium Event</button>
 </div>
-
 <!-- HOME TAB -->
 <div class="tab-content active" id="tab-home">
   <div class="sub-tab-bar">
@@ -247,8 +246,29 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   </div>
   <div class="form-card" id="h-labor-card"><div class="form-title">Labor Rate Per Cleaner</div><div id="h-labor-grid" class="labor-grid"></div><div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Rates update automatically when crew size changes.</div></div>
   <div id="h-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Select a service type and fill in the details to generate your estimate</div></div>
+  <div class="form-card" id="h-message-card">
+    <div class="form-title">Generate Client Message</div>
+    <div class="mode-banner"><strong>All fields below are editable.</strong> Hours pre-fills from your Estimated Duration above. For Deep Cleaning and Move Out, Bedrooms and Bathrooms pre-fill from your Rooms section too (Master + Bedrooms, Full + Half Baths) — for Standard and Move In, enter them by hand since those services don't track rooms. Feel free to adjust any of these before generating. Add an "Hours — to" value for a range like 4-5 hours.</div>
+    <div class="form-grid">
+      <div class="field"><label>Bedrooms</label><input type="number" id="h-msg-bed" value="0" min="0" max="20" step="0.5"></div>
+      <div class="field"><label>Bathrooms</label><input type="number" id="h-msg-bath" value="0" min="0" max="20" step="0.5"></div>
+      <div class="field"><label>Hours</label><input type="number" id="h-msg-hrs" value="0" min="0" max="24" step="0.25"></div>
+      <div class="field"><label>Hours — to (optional, for a range)</label><input type="number" id="h-msg-hrs-to" placeholder="e.g. 5" min="0" max="24" step="0.25"></div>
+      <div class="field"><label>Zip Code</label><input type="text" id="h-msg-zip" placeholder="e.g. 77002" maxlength="10"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="apply-btn" style="background:#fff;color:#0D1B2A;border:0.5px solid #D1D5DB;" onclick="fillHomeMsgFromCalc()">↺ Use calculator values</button>
+      <button class="apply-btn" onclick="generateHomeMessage()">✉️ Generate Message</button>
+    </div>
+    <div id="h-msg-output" style="display:none;margin-top:12px;">
+      <textarea id="h-msg-text" readonly style="width:100%;min-height:340px;padding:12px;border:0.5px solid #D1D5DB;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;color:#0D1B2A;line-height:1.5;resize:vertical;"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <button class="apply-btn" onclick="copyHomeMessage()">📋 Copy to clipboard</button>
+        <span id="h-msg-copied" style="display:none;font-size:12px;color:#0F6E56;font-weight:500;">Copied!</span>
+      </div>
+    </div>
+  </div>
 </div>
-
 <!-- COMMERCIAL TAB -->
 <div class="tab-content" id="tab-commercial">
   <div class="sub-tab-bar">
@@ -324,7 +344,6 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   </div>
   <div id="c-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter square footage and select a space type to generate your estimate</div></div>
 </div>
-
 <!-- SMALL EVENT TAB -->
 <div class="tab-content" id="tab-smallevent">
   <div class="form-card">
@@ -340,7 +359,6 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   <div class="form-card" id="se-labor-card"><div class="form-title">Labor Rate Per Cleaner</div><div id="se-labor-grid" class="labor-grid"></div><div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Edit each cleaner individually.</div></div>
   <div id="se-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Fill in the details above to generate your small event estimate</div></div>
 </div>
-
 <!-- MEDIUM EVENT TAB -->
 <div class="tab-content" id="tab-mediumevent">
   <div class="form-card">
@@ -365,7 +383,6 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   <div class="form-card" id="me-labor-card"><div class="form-title">Labor Rate Per Cleaner</div><div id="me-labor-grid" class="labor-grid"></div><div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Edit each cleaner individually.</div></div>
   <div id="me-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Fill in the details above to generate your medium event estimate</div></div>
 </div>
-
 <div class="footer">
   <strong>Bee Pristine</strong> &nbsp;·&nbsp; 832-843-1948 &nbsp;·&nbsp; hello@beepristine.com &nbsp;·&nbsp; Houston, TX
   <br><br>Any time beyond the scheduled service is billed at $55.00 per hour and will be reflected on your final invoice.
@@ -377,7 +394,6 @@ function fmt(n){return "$"+Math.round(n).toLocaleString()}
 function fmtFull(n){return "$"+n.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g,',')}
 function fmtTime(h){const hr=Math.floor(h),mn=Math.round((h-hr)*60);if(!mn)return hr+"h";if(!hr)return mn+"min";return hr+"h "+mn+"min"}
 const TAX=0.0825;
-
 function buildTaxSection(dp,priceId,amtId,totalId){
   const t=dp*TAX,w=dp+t;
   return `<div class="tax-section"><div class="tax-row"><span class="tax-label">Price before tax</span><span class="tax-val" id="${priceId}">${fmtFull(dp)}</span></div><div class="tax-row"><span class="tax-label">Sales tax (8.25%)</span><span class="tax-val" id="${amtId}">+ $${t.toFixed(2)}</span></div><div class="tax-row total-with-tax"><span>Total with tax</span><span id="${totalId}">${fmtFull(w)}</span></div></div>`;
@@ -404,23 +420,19 @@ function switchTab(id,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');btn.classList.add('active');
+  // Every tab starts fresh — no carrying over values from a previous visit.
   if(id==='commercial'){
-    const savedP=cManualPrice,savedT=cManualTime;
-    calcComm();
-    if(savedP!==null){cManualPrice=savedP;const el=document.getElementById('c-price-override');if(el)el.value=savedP.toFixed(2);updateCommTax();}
-    if(savedT!==null){cManualTime=savedT;const el=document.getElementById('c-time');if(el)el.value=savedT.toFixed(2);}
+    const firstSub=document.querySelector('#tab-commercial .sub-tab-btn');
+    switchCommSvc('regular',firstSub);
   } else if(id==='home'){
-    const savedP=hManualPrice;calcHome();
-    if(savedP!==null){hManualPrice=savedP;const el=document.getElementById('h-price-override');if(el)el.value=savedP.toFixed(2);updateHomeTax();}
+    const firstSub=document.querySelector('#tab-home .sub-tab-btn');
+    switchHomeSvc('standard',firstSub);
   } else if(id==='smallevent'){
-    const savedP=seManualPrice;calcSmallEvent();
-    if(savedP!==null){seManualPrice=savedP;const el=document.getElementById('se-price-override');if(el)el.value=savedP.toFixed(2);updateSETax();}
+    resetSmallEventTab();
   } else if(id==='mediumevent'){
-    const savedP=meManualPrice;calcMediumEvent();
-    if(savedP!==null){meManualPrice=savedP;const el=document.getElementById('me-price-override');if(el)el.value=savedP.toFixed(2);updateMETax();}
+    resetMediumEventTab();
   }
 }
-
 // ── HOME CALCULATOR ──
 const H_SVC={
   standard:{label:"Standard Regular Cleaning",base:55,minHrs:2,rateKey:"standard",hourly:true},
@@ -431,19 +443,133 @@ const H_SVC={
 const H_ROOMS={master:{label:"Master Bedroom and Bath",price:70,standard:70,deep:70,movein:70,moveout:70},beds:{label:"Bedroom",price:30,standard:30,deep:30,movein:30,moveout:30},fullbaths:{label:"Full Bathroom",price:35,standard:35,deep:35,movein:35,moveout:35},halfbaths:{label:"Half Bathroom",price:20,standard:20,deep:20,movein:20,moveout:20},living:{label:"Living Room",price:30,standard:30,deep:30,movein:30,moveout:30},dining:{label:"Dining Room",price:22,standard:22,deep:22,movein:22,moveout:22},kitchen:{label:"Kitchen",price:45,standard:45,deep:45,movein:45,moveout:45},office:{label:"Home Office",price:45,standard:45,deep:45,movein:45,moveout:45},game:{label:"Game Room",price:22,standard:22,deep:22,movein:22,moveout:22},utility:{label:"Utility Room",price:18,standard:18,deep:18,movein:18,moveout:18}};
 const H_ROOM_TIME={master:{standard:1.75,deep:2.75,movein:2.0,moveout:2.5},beds:{standard:0.75,deep:1.0,movein:0.83,moveout:0.92},fullbaths:{standard:0.75,deep:1.17,movein:0.92,moveout:1.0},halfbaths:{standard:0.5,deep:0.67,movein:0.5,moveout:0.58},living:{standard:0.75,deep:0.92,movein:0.75,moveout:0.83},dining:{standard:0.5,deep:0.67,movein:0.58,moveout:0.63},kitchen:{standard:1.0,deep:1.5,movein:1.25,moveout:1.42},office:{standard:0.75,deep:1.0,movein:0.92,moveout:1.0},game:{standard:0.5,deep:0.75,movein:0.58,moveout:0.67},utility:{standard:0.33,deep:0.58,movein:0.42,moveout:0.5}};
 const H_EXTRAS=[{id:"h_baseboards",label:"Baseboards",price:35,time:0.67},{id:"h_bathcab",label:"Bathroom Interior Cabinets",price:35,time:0.5},{id:"h_carpet",label:"Carpet Cleaning (per room)",price:40,time:0.58,qty:true},{id:"h_supplies",label:"Cleaning Supplies",price:15,time:0},{id:"h_dishwasher",label:"Dishwasher Deep Clean",price:25,time:0.25},{id:"h_doubleoven",label:"Double Oven Cleaning",price:75,time:1.5},{id:"h_kitchencab",label:"Kitchen Interior Cabinets",price:55,time:0.75},{id:"h_laundry",label:"Laundry Service (per 2 loads)",price:45,time:1.0,qty:true},{id:"h_org",label:"Organizational Help",price:40,time:1.0},{id:"h_patio_back",label:"Back Patio",price:25,time:0.58},{id:"h_patio_front",label:"Front Patio",price:25,time:0.58},{id:"h_rangeoven",label:"Range Oven Cleaning",price:90,time:2.0},{id:"h_fridge",label:"Refrigerator",price:40,time:0.75},{id:"h_singleoven",label:"Single Oven Cleaning",price:50,time:1.0},{id:"h_venetian",label:"Venetian Blinds (per window)",price:35,time:0.67,qty:true},{id:"h_washerdryer",label:"Washer and Dryer Deep Clean",price:45,time:1.0},{id:"h_garage_std",label:"Garage Standard Cleaning",price:35,time:0.42},{id:"h_garage_deep",label:"Garage Deep Cleaning",price:50,time:0.75}];
-
+const H_MESSAGES={
+  standard:`Thank you for reaching out to Bee Pristine!
+ 
+Our Standard Regular Cleaning is designed to keep your home consistently fresh, comfortable and well-maintained. This is not a rushed wipe down. It is a thoughtful, detail-focused clean that covers every room from top to bottom so your home always feels its best.
+ 
+🧹 General Areas: Thorough tidying of all main living spaces including straightening surfaces and decor. Ceiling fans dusted blade by blade. All visible surfaces dusted including window sills. Interior windows cleaned streak-free. Floors vacuumed and mopped throughout. Beds made and fresh sheets put on. Please ensure old sheets are fully removed and fresh sheets are set out and ready prior to our arrival.
+ 
+🍋 Kitchen: Countertops, backsplash and exterior of all appliances wiped down and sanitized including the fridge, oven, dishwasher and microwave. Sink scrubbed and polished. Trash emptied and liner replaced.
+ 
+🚿 Bathrooms: Full sanitization of toilets inside, outside and behind. Shower and tub surfaces cleaned. Sink and faucets scrubbed and polished. Mirrors cleaned streak-free. Trash emptied and liner replaced.
+ 
+➕ Available Add-Ons
+• Interior Oven Cleaning
+• Refrigerator Deep Clean
+• Laundry Service per load (2): (wash, dry, fold & put away)
+• Carpet / Rug Cleaning per room
+• Organizational Help
+ 
+---
+ 
+For your [# bedroom], [# bathroom] home, the rate is $[amount].
+ 
+This covers a [# hr] cleaning session. Any additional time beyond the initial quote is billed at $55.00 per hour.
+ 
+We service the [zip code] area. Which day works best for you?
+ 
+Also, do you have a few minutes for a quick call today? We’d love to iron out the details to ensure our team is fully prepared. We can be reached at 832-843-1948.`,
+  deep:`Thank you for reaching out to Bee Pristine!
+ 
+Our Deep Cleaning is designed for homes that need more than a surface refresh. It goes well beyond our Standard Regular Cleaning to tackle the buildup, hidden grime and overlooked areas that routine cleaning simply does not reach. Whether it is your first time booking with us or it has been a while since your last professional clean, this service brings your home back to its very best from top to bottom.
+ 
+🧹 General Areas: Thorough tidying of all main living spaces including straightening surfaces and decor. Ceiling fans dusted blade by blade. All visible surfaces dusted including window sills. Interior windows cleaned streak-free. Baseboards wiped down throughout the entire home. Floors vacuumed and mopped throughout. Beds made and fresh sheets put on. Please ensure old sheets are fully removed and fresh sheets are set out and ready prior to our arrival.
+ 
+🍋 Kitchen: Countertops, backsplash and exterior of all appliances wiped down and sanitized including the fridge, oven, dishwasher and microwave. Interior of oven deep cleaned. Kitchen interior cabinets wiped down inside and out. Sink scrubbed and polished. Trash emptied and liner replaced.
+ 
+🍽️ Dishwasher Sanitation: We remove and scrub the filter, spray arms and utensil basket then run an empty baking soda cycle to fully sanitize and deodorize the machine so it is fresh and ready to use.
+ 
+👕 Washer and Dryer Sanitation: The interior drum, door seals and detergent drawer of the washer are thoroughly wiped down and sanitized. The dryer drum, door and lint trap area are cleaned out completely so everything is fresh, safe and ready to go.
+ 
+🚿 Bathrooms: Full sanitization of toilets inside, outside and behind. Shower and tub surfaces cleaned. Sink and faucets scrubbed and polished. Mirrors cleaned streak-free. Bathroom interior cabinets wiped down inside and out. Trash emptied and liner replaced.
+ 
+➕ Available Add-Ons
+• Refrigerator Deep Clean
+• Laundry Service per load (2): (wash, dry, fold & put away)
+• Carpet / Rug Cleaning per room
+• Venetian Blinds per window
+• Organizational Help
+ 
+---
+ 
+For your [# bedroom], [# bathroom] home, the rate is $[amount].
+ 
+This covers a [# hr] cleaning session. Any additional time beyond the initial quote is billed at $55.00 per hour.
+ 
+We service the [zip code] area. Which day works best for you?
+ 
+Also, do you have a few minutes for a quick call today? We’d love to iron out the details to ensure our team is fully prepared. We can be reached at 832-843-1948.`,
+  movein:`Welcome to your new home - Thank you for reaching out to Bee Pristine!
+ 
+Our Move In Cleaning is designed to give you the fresh, clean start you deserve before you settle in. It covers everything included in our Standard Regular Cleaning with one important upgrade: we go inside. That means every appliance and every cabinet gets a thorough cleaning from the inside out, not just a wipe down on the exterior. Before your belongings arrive, we make sure every surface, shelf and hidden corner is spotless and ready for you to make it your own.
+ 
+🧹 General Areas: Thorough tidying of all main living spaces including straightening surfaces and decor. Ceiling fans dusted blade by blade. All visible surfaces dusted including window sills. Interior windows cleaned streak-free. Blinds dusted and wiped down. Baseboards and doors wiped down throughout the entire home. Floors vacuumed and mopped throughout. Front and back patio cleaned. Garage swept.
+ 
+🍋 Kitchen: Full interior cleaning of all appliances including the fridge, oven and microwave. Every cabinet wiped down inside and out. Countertops, backsplash and sink scrubbed and polished. Trash emptied and liner replaced.
+ 
+🍽️ Dishwasher Sanitation: We remove and scrub the filter, spray arms and utensil basket then run an empty baking soda cycle to fully sanitize and deodorize the machine so it is fresh and ready to use from day one.
+ 
+👕 Washer and Dryer Sanitation: The interior drum, door seals and detergent drawer of the washer are thoroughly wiped down and sanitized. The dryer drum, door and lint trap area are cleaned out completely so everything is fresh, safe and ready to go.
+ 
+🚿 Bathrooms: Full sanitization of toilets inside, outside and behind. Shower and tub surfaces cleaned. Sink and faucets scrubbed and polished. Mirrors cleaned streak-free. Cabinet interiors wiped down. Trash emptied and liner replaced.
+ 
+➕ Available Add-On
+• Carpet / Rug Cleaning per room
+• Laundry Service per load (2): (wash, dry, fold & put away)
+• Organizational Help
+• Packing / Unpacking Service per box
+ 
+---
+ 
+For your [# bedroom], [# bathroom] home, the rate is $[amount].
+ 
+This covers a [# hr] cleaning session. Any additional time beyond the initial quote is billed at $55.00 per hour.
+ 
+We service the [zip code] area. Which day works best for you?
+ 
+Also, do you have a few minutes for a quick call today? We’d love to iron out the details to ensure our team is fully prepared. We can be reached at 832-843-1948.`,
+  moveout:`Thank you for reaching out to Bee Pristine!
+ 
+Our Move Out Cleaning is designed to leave your home in the best possible condition for whoever comes next. Whether you are preparing for a final walkthrough, protecting your security deposit or simply leaving things right, we handle every detail from top to bottom. This is our most comprehensive residential service and nothing gets overlooked.
+ 
+🧹 General Areas: Thorough cleaning of all main living spaces. Ceiling fans dusted blade by blade. All visible surfaces dusted including window sills. Interior windows cleaned streak-free. Blinds dusted and wiped down. Baseboards and doors wiped down throughout the entire home. Floors vacuumed and mopped throughout. Front and back patio cleaned. Garage swept and tidied.
+ 
+🍋 Kitchen: Full interior cleaning of all appliances including the fridge, oven and microwave. Every cabinet wiped down inside and out. Countertops, backsplash and sink scrubbed and polished. Trash emptied and liner replaced.
+ 
+🍽️ Dishwasher Sanitation: We remove and scrub the filter, spray arms and utensil basket then run an empty baking soda cycle to fully sanitize and deodorize the machine so it is left fresh and clean for the next occupant.
+ 
+👕 Washer and Dryer Sanitation: The interior drum, door seals and detergent drawer of the washer are thoroughly wiped down and sanitized. The dryer drum, door and lint trap area are cleaned out completely so everything is left fresh and ready to go.
+ 
+🚿 Bathrooms: Full sanitization of toilets inside, outside and behind. Shower and tub surfaces cleaned. Sink and faucets scrubbed and polished. Mirrors cleaned streak-free. Cabinet interiors wiped down. Trash emptied and liner replaced.
+ 
+🪟 Additional Inclusions: Venetian blinds cleaned per window. Garage deep cleaned. All surfaces left move out ready.
+ 
+➕ Available Add-Ons
+• Carpet / Rug Cleaning per room
+• Laundry Service per load (2): (wash, dry, fold & put away)
+• Organizational Help
+• Packing / Unpacking Service per box
+ 
+---
+ 
+For your [# bedroom], [# bathroom] home, the rate is $[amount].
+ 
+This covers a [# hr] cleaning session. Any additional time beyond the initial quote is billed at $55.00 per hour.
+ 
+We service the [zip code] area. Which day works best for you?
+ 
+Also, do you have a few minutes for a quick call today? We’d love to iron out the details to ensure our team is fully prepared. We can be reached at 832-843-1948.`,
+};
 // Packing qty state
 let hPackQty=0,hUnpackQty=0;
 const PACK_PRICE=10,PACK_TIME=0.3; // 18 min = 0.3 hrs per box
-
 function hChangePackQty(type,delta){
   if(type==='pack'){hPackQty=Math.max(0,hPackQty+delta);document.getElementById('h-qty-pack').textContent=hPackQty;}
   else{hUnpackQty=Math.max(0,hUnpackQty+delta);document.getElementById('h-qty-unpack').textContent=hUnpackQty;}
   calcHome();
 }
-
-let hSvc='standard',hDiscCode=null,hDiscPct=0,hAutoPrice=0,hManualPrice=null,hLastCost=0;
-
+let hSvc='standard',hDiscCode=null,hDiscPct=0,hAutoPrice=0,hManualPrice=null,hLastCost=0,hAutoHours=0;
 // FIX 2: Reset all extras, rooms, packing when switching service type
 function resetHomeExtras(){
   // Reset checkboxes and qty extras
@@ -469,7 +595,6 @@ function resetHomeExtras(){
   // Reset discount
   removeHomeDiscount();
 }
-
 function switchHomeSvc(sv,btn){
   hSvc=sv;
   document.querySelectorAll('#tab-home .sub-tab-btn').forEach(b=>b.classList.remove('active'));
@@ -480,10 +605,67 @@ function switchHomeSvc(sv,btn){
   hManualPrice=null;
   // Reset all selections when switching service type
   resetHomeExtras();
+  const bedEl=document.getElementById('h-msg-bed');if(bedEl&&svc.hourly)bedEl.value='0';
+  const bathEl=document.getElementById('h-msg-bath');if(bathEl&&svc.hourly)bathEl.value='0';
+  const hrsToEl=document.getElementById('h-msg-hrs-to');if(hrsToEl)hrsToEl.value='';
+  const zipEl=document.getElementById('h-msg-zip');if(zipEl)zipEl.value='';
   calcHome();
+  const msgOut=document.getElementById('h-msg-output');if(msgOut)msgOut.style.display='none';
+  fillHomeMsgFromCalc();
 }
-
 function getHomeRecommendedCrew(){const sv=hSvc,totalBeds=parseInt(document.getElementById('h-beds').value)+parseInt(document.getElementById('h-master').value),fb=parseInt(document.getElementById('h-fullbaths').value);if(sv==='standard')return totalBeds<=3&&fb<=2?1:2;if(sv==='deep'){if(totalBeds<=2&&fb<=1)return 1;if(totalBeds<=4)return 2;return 3;}if(totalBeds>=5)return 3;return 2;}
+// ── CLIENT MESSAGE GENERATOR ──
+function formatCount(n){
+  if(!n||isNaN(n))return '0';
+  return (Math.round(n*2)/2).toString().replace(/\.0$/,'');
+}
+function fillHomeMsgFromCalc(){
+  const isHourly=H_SVC[hSvc].hourly;
+  const hrsEl=document.getElementById('h-msg-hrs');if(hrsEl)hrsEl.value=formatCount(hAutoHours);
+  if(!isHourly){
+    const master=parseInt((document.getElementById('h-master')||{value:'0'}).value)||0;
+    const beds=parseInt((document.getElementById('h-beds')||{value:'0'}).value)||0;
+    const fullbaths=parseInt((document.getElementById('h-fullbaths')||{value:'0'}).value)||0;
+    const halfbaths=parseInt((document.getElementById('h-halfbaths')||{value:'0'}).value)||0;
+    const bedEl=document.getElementById('h-msg-bed');if(bedEl)bedEl.value=(master+beds).toString();
+    const bathEl=document.getElementById('h-msg-bath');if(bathEl)bathEl.value=(fullbaths+halfbaths).toString();
+  }
+}
+function generateHomeMessage(){
+  const tmpl=H_MESSAGES[hSvc];if(!tmpl)return;
+  const bed=parseFloat(document.getElementById('h-msg-bed').value)||0;
+  const bath=parseFloat(document.getElementById('h-msg-bath').value)||0;
+  const hrsFrom=parseFloat(document.getElementById('h-msg-hrs').value)||0;
+  const hrsToRaw=document.getElementById('h-msg-hrs-to').value;
+  const hrsTo=hrsToRaw!==''?parseFloat(hrsToRaw):null;
+  const zip=document.getElementById('h-msg-zip').value.trim();
+  const amount=Math.round(hManualPrice!==null?hManualPrice:hAutoPrice);
+  let hrsText;
+  if(hrsTo!==null&&!isNaN(hrsTo)&&hrsTo>0&&hrsTo!==hrsFrom){
+    const lo=Math.min(hrsFrom,hrsTo),hi=Math.max(hrsFrom,hrsTo);
+    hrsText=formatCount(lo)+'-'+formatCount(hi)+' hour';
+  } else {
+    hrsText=formatCount(hrsFrom)+'-hour';
+  }
+  let msg=tmpl;
+  msg=msg.replace('[# bedroom]',formatCount(bed)+'-bedroom');
+  msg=msg.replace('[# bathroom]',formatCount(bath)+'-bathroom');
+  msg=msg.replace('[amount]',amount.toLocaleString());
+  msg=msg.replace('[# hr]',hrsText);
+  if(zip)msg=msg.replace('[zip code]',zip);
+  const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
+  const outWrap=document.getElementById('h-msg-output');if(outWrap)outWrap.style.display='block';
+  const cp=document.getElementById('h-msg-copied');if(cp)cp.style.display='none';
+}
+function copyHomeMessage(){
+  const ta=document.getElementById('h-msg-text');if(!ta)return;
+  const showCopied=()=>{const cp=document.getElementById('h-msg-copied');if(cp){cp.style.display='inline';setTimeout(()=>{cp.style.display='none';},2000);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(showCopied).catch(()=>{ta.select();document.execCommand('copy');showCopied();});
+  } else {
+    ta.select();document.execCommand('copy');showCopied();
+  }
+}
 function applyHomeDiscount(){const code=document.getElementById('h-disc-code').value.trim(),pct=parseFloat(document.getElementById('h-disc-pct').value);if(!code){alert('Please enter a discount code name.');return;}if(!pct||pct<=0||pct>100){alert('Please enter a valid percentage.');return;}hDiscCode=code;hDiscPct=pct;document.getElementById('h-disc-applied').style.display='flex';document.getElementById('h-disc-text').textContent=code+' ('+pct+'% off)';calcHome();}
 function removeHomeDiscount(){hDiscCode=null;hDiscPct=0;const dc=document.getElementById('h-disc-code');if(dc)dc.value='';const dp=document.getElementById('h-disc-pct');if(dp)dp.value='';const da=document.getElementById('h-disc-applied');if(da)da.style.display='none';calcHome();}
 function onHomePriceOverride(v){const val=parseFloat(v);hManualPrice=(!isNaN(val)&&val>=0)?val:null;updateHomeTax();}
@@ -520,13 +702,13 @@ function calcHome(){
   if(hPackQty>0)extLines.push({label:'Packing Service',qty:hPackQty,totalPrice:packSub,time:packTime});
   if(hUnpackQty>0)extLines.push({label:'Unpacking Service',qty:hUnpackQty,totalPrice:unpackSub,time:unpackTime});
   extSub+=packSub+unpackSub;extTime+=packTime+unpackTime;
-
   const adjTime=isHourly?Math.max(estHours+(extTime/crew),svc.minHrs):Math.max((totalTime1+extTime)/crew,svc.minHrs);
   const laborCost=combinedRate*adjTime;
   const totalRoomsCount=Object.keys(H_ROOMS).reduce((s,k)=>s+(parseInt((document.getElementById('h-'+k)||{value:'0'}).value)||0),0);
   const supplies=extLines.find(e=>e.id==='h_supplies')?0:Math.round(totalRoomsCount*1.5+8);
   const basePrice=roomSubtotal+extSub,discAmt=freqDisc>0?Math.round(basePrice*(freqDisc/100)):0,codeAmt=hDiscPct>0?Math.round((basePrice-discAmt)*(hDiscPct/100)):0,finalPrice=basePrice-discAmt-codeAmt,totalCost=laborCost+supplies,profit=finalPrice-totalCost,margin=Math.round((profit/finalPrice)*100);
-  hAutoPrice=finalPrice;hLastCost=totalCost;
+  hAutoPrice=finalPrice;hLastCost=totalCost;hAutoHours=adjTime;
+  fillHomeMsgFromCalc();
   const dp=hManualPrice!==null?hManualPrice:finalPrice,taxAmt=dp*TAX,priceWithTax=dp+taxAmt;
   const out=document.getElementById('h-output');
   out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="h-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="h-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaner${crew>1?'s':''} on site</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="h-metric-profit">${fmt(profit)}</div><div class="metric-note" id="h-metric-margin">${margin}% margin</div></div></div>
@@ -553,7 +735,6 @@ function calcHome(){
   ${!isHourly&&crew>1?`<div class="crew-card"><div class="crew-header">Crew breakdown</div><div class="crew-grid"><div class="crew-metric"><div class="crew-metric-label">Crew size</div><div class="crew-metric-val teal">${crew}</div><div class="crew-metric-sub">cleaners on site</div></div><div class="crew-metric"><div class="crew-metric-label">Time on site</div><div class="crew-metric-val">${fmtTime(adjTime)}</div><div class="crew-metric-sub">per cleaner</div></div><div class="crew-metric"><div class="crew-metric-label">1 cleaner would take</div><div class="crew-metric-val">${fmtTime(totalTime1+extTime)}</div><div class="crew-metric-sub">time saved: ${fmtTime((totalTime1+extTime)-adjTime)}</div></div></div>${cleanerRows(laborDetails,adjTime)}</div>`:''}
   ${margin<30?'<div class="warning-box">⚠️ Margin is below 30%. Consider adjusting your pricing or crew size.</div>':''}`;
 }
-
 // ── COMMERCIAL CALCULATOR ──
 const C_RATES={office:{regular:.15,deep:.25,quarterly:.22,min:{regular:150,deep:250,quarterly:220},freq:"Weekly / Biweekly",cert:false},medical:{regular:.25,deep:.40,quarterly:.35,min:{regular:200,deep:350,quarterly:300},freq:"Daily / Weekly",cert:"OSHA 10 + Bloodborne Pathogen required"},dental:{regular:.27,deep:.44,quarterly:.38,min:{regular:200,deep:350,quarterly:300},freq:"Daily / Weekly",cert:false},retail:{regular:.15,deep:.25,quarterly:.22,min:{regular:150,deep:250,quarterly:220},freq:"Daily / Weekly",cert:false},restaurant:{regular:.20,deep:.32,quarterly:.28,min:{regular:175,deep:300,quarterly:260},freq:"Daily",cert:false},gym:{regular:.18,deep:.28,quarterly:.25,min:{regular:175,deep:275,quarterly:240},freq:"Daily / Weekly",cert:false},event:{regular:.20,deep:.32,quarterly:.28,min:{regular:200,deep:300,quarterly:260},freq:"Per event",cert:false},warehouse:{regular:.13,deep:.21,quarterly:.18,min:{regular:150,deep:200,quarterly:180},freq:"Weekly / Monthly",cert:false},school_lab:{regular:.28,deep:.45,quarterly:.38,min:{regular:250,deep:400,quarterly:340},freq:"Weekly",cert:"OSHA 10 required"},med_lab:{regular:.38,deep:.60,quarterly:.52,min:{regular:350,deep:550,quarterly:470},freq:"Daily / Weekly",cert:"OSHA 10 + Bloodborne Pathogen required"},chem_lab:{regular:.50,deep:.75,quarterly:.65,min:{regular:450,deep:700,quarterly:600},freq:"Weekly",cert:"OSHA 10 + HAZMAT Awareness required"}};
 const C_TIME={regular:{1:2.5,2:1.5,3:1.0},deep:{1:4.5,2:2.8,3:1.9},quarterly:{1:3.5,2:2.2,3:1.5}};
@@ -562,7 +743,27 @@ const FREQ_SHORT={10:"monthly",20:"weekly",22:"2x/week",25:"3x/week"};
 const C_OFFICE_PARAMS={privateoffice:{label:"Private Office",price:45,time:0.75},conf:{label:"Conference Room",price:60,time:1.0},kitchen:{label:"Kitchen/Breakroom",price:50,time:1.0},stdbath:{label:"Standard Bathroom",price:55,time:0.75},multibath:{label:"Multi User Bathroom",price:90,time:1.5},lobby:{label:"Reception/Lobby",price:50,time:1.0}};
 const C_EXTRAS=[{id:"c_carpet",label:"Carpet Cleaning",price:40,time:0.58,qty:true},{id:"c_fridge",label:"Refrigerator",price:40,time:0.75},{id:"c_singleoven",label:"Single Oven Cleaning",price:50,time:1.0},{id:"c_venetian",label:"Venetian Blinds (per window)",price:35,time:0.67,qty:true},{id:"c_pickhang",label:"Picture Hanging",price:30,time:0.5,qty:true},{id:"c_org",label:"Organizational Help",price:40,time:1.0},{id:"c_offwin",label:"Office Window Cleaning (per window)",price:5,time:0.33,qty:true}];
 let cSvc='regular',cAutoTime=0,cManualTime=null,cAutoPrice=0,cManualPrice=null,cLastCost=0;
-function switchCommSvc(sv,btn){cSvc=sv;document.querySelectorAll('#tab-commercial .sub-tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('c-room-card').style.display='block';document.getElementById('c-extras-card').style.display='block';document.getElementById('c-room-title').textContent='Office Parameters — '+{regular:'Standard Regular',deep:'Deep Clean',quarterly:'Quarterly Deep'}[sv];buildCommExtras();cManualTime=null;cManualPrice=null;calcComm();}
+function switchCommSvc(sv,btn){
+  cSvc=sv;
+  document.querySelectorAll('#tab-commercial .sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('c-room-card').style.display='block';
+  document.getElementById('c-extras-card').style.display='block';
+  document.getElementById('c-room-title').textContent='Office Parameters — '+{regular:'Standard Regular',deep:'Deep Clean',quarterly:'Quarterly Deep'}[sv];
+  // Reset all fields to default
+  const sqft=document.getElementById('c-sqft');if(sqft)sqft.value='';
+  const space=document.getElementById('c-space');if(space)space.value='';
+  const freq=document.getElementById('c-freq');if(freq)freq.value='0';
+  const crew=document.getElementById('c-crew');if(crew)crew.value='auto';
+  ['privateoffice','conf','kitchen','stdbath','multibath','lobby'].forEach(k=>{const el=document.getElementById('c-'+k);if(el)el.value='0';});
+  const timeEl=document.getElementById('c-time');if(timeEl)timeEl.value='';
+  const timeRow=document.getElementById('c-time-row');if(timeRow)timeRow.style.display='none';
+  const laborGrid=document.getElementById('c-labor-grid');if(laborGrid)laborGrid.innerHTML='';
+  const laborCard=document.getElementById('c-labor-card');if(laborCard)laborCard.style.display='none';
+  buildCommExtras();
+  cManualTime=null;cManualPrice=null;
+  calcComm();
+}
 function buildCommExtras(){const grid=document.getElementById('c-extras-grid');if(!grid)return;grid.innerHTML='';C_EXTRAS.forEach(e=>{const div=document.createElement('div');div.className='extra-item';div.id='c-item-'+e.id;if(e.qty){div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="cChangeQty('${e.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="c-qty-${e.id}" style="min-width:20px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="cChangeQty('${e.id}',1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;}else{div.innerHTML=`<input type="checkbox" id="c-ex-${e.id}" onchange="resetCommPriceAndCalc()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('c-ex-'+e.id);cb.checked=!cb.checked;calcComm();}div.classList.toggle('selected',document.getElementById('c-ex-'+e.id).checked);resetCommPriceAndCalc();};}grid.appendChild(div);});}
 function cChangeQty(id,delta){const el=document.getElementById('c-qty-'+id),nv=Math.max(0,(parseInt(el.textContent)||0)+delta);el.textContent=nv;document.getElementById('c-item-'+id).classList.toggle('selected',nv>0);resetCommPriceAndCalc();}
 function onCommTimeChange(){const el=document.getElementById('c-time');if(!el)return;const v=parseFloat(el.value);cManualTime=(!isNaN(v)&&v>0)?v:null;const savedPrice=cManualPrice;calcComm();if(savedPrice!==null){cManualPrice=savedPrice;const inp=document.getElementById('c-price-override');if(inp)inp.value=savedPrice.toFixed(2);updateCommTax();}}
@@ -576,7 +777,6 @@ function recalcCommKeepPrice(){const saved=cManualPrice;calcComm();if(saved!==nu
 function calcComm(){const sq=parseFloat(document.getElementById('c-sqft').value)||0;const sp=document.getElementById('c-space').value;const sv=cSvc;const freqDisc=parseInt(document.getElementById('c-freq').value)||0;const freqLabel={0:"One-time",10:"Monthly (10% off)",20:"Weekly (20% off)",22:"2x/week (22% off)",25:"3x/week (25% off)"}[freqDisc];const out=document.getElementById('c-output');const pChk=['privateoffice','conf','kitchen','stdbath','multibath','lobby'];const hasParams=pChk.some(k=>parseInt((document.getElementById('c-'+k)||{value:'0'}).value)>0);const hasExtras=C_EXTRAS.some(e=>{if(e.qty)return parseInt((document.getElementById('c-qty-'+e.id)||{textContent:'0'}).textContent)>0;const cb=document.getElementById('c-ex-'+e.id);return cb&&cb.checked;});const canCalcNoSqft=sp&&(hasParams||hasExtras);if(!sp){out.innerHTML='<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Select a space type to get started.</div>';return;}if(!sq&&!canCalcNoSqft){out.innerHTML='<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter square footage, or add office parameters to generate your estimate without sq ft.</div>';return;}const r=C_RATES[sp],rate=r[sv],minC=r.min[sv];const crewOverride=document.getElementById('c-crew').value;const autoStaff=sq>0?cStaff(sq):1;const s=crewOverride!=='auto'?parseInt(crewOverride):autoStaff;const raw=sq>0?sq*rate:0;const basePrice=sq>0?Math.max(raw,minC):0;const isMin=sq>0&&raw<minC;const sqftPrice=basePrice;const tRow=document.getElementById('c-time-row'),tEl=document.getElementById('c-time');if(tRow)tRow.style.display='flex';buildLaborInputs(s,'c','recalcCommKeepPrice');const {combined:combinedRate,details:laborDetails}=getLaborRates(s,'c');let extSub=0,extTime=0;const extLines=[];C_EXTRAS.forEach(e=>{if(e.qty){const qty=parseInt((document.getElementById('c-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}}else{const cb=document.getElementById('c-ex-'+e.id),item=document.getElementById('c-item-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}else if(item)item.classList.remove('selected');}});let paramSub=0,paramTime=0;const paramLines=[];const pKeys=['privateoffice','conf','kitchen','stdbath','multibath','lobby'];pKeys.forEach(k=>{const count=parseInt((document.getElementById('c-'+k)||{value:'0'}).value)||0;if(count>0){const pp=C_OFFICE_PARAMS[k].price*count,pt=C_OFFICE_PARAMS[k].time*count;paramSub+=pp;paramTime+=pt;paramLines.push({label:C_OFFICE_PARAMS[k].label,count,price:pp});}});const sqftTime=sq>0?(sq/1000)*(C_TIME[sv][Math.min(s,3)]||C_TIME[sv][3]):0;cAutoTime=sqftTime+(paramTime+extTime)/s;if(tEl&&cManualTime===null)tEl.value=cAutoTime.toFixed(2);const hrs=cManualTime!==null?cManualTime:cAutoTime;const adjHrs=hrs;const laborCost=combinedRate*adjHrs;const supplies=sq>0?Math.round(sq*0.003+10):10;const preTotalPrice=sqftPrice+paramSub+extSub;const discAmt=freqDisc>0?Math.round(preTotalPrice*(freqDisc/100)):0;const totalPrice=preTotalPrice-discAmt;if(totalPrice<=0){out.innerHTML='<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Add office parameters or extras to generate your estimate.</div>';return;}const totalCost=laborCost+supplies;const profit=totalPrice-totalCost;const margin=Math.round((profit/totalPrice)*100);cAutoPrice=totalPrice;cLastCost=totalCost;const dp=cManualPrice!==null?cManualPrice:totalPrice;const taxAmt=dp*TAX,priceWithTax=dp+taxAmt;const spLabel=document.getElementById('c-space').options[document.getElementById('c-space').selectedIndex].text;const staffLabel=s===1?"1 cleaner":s+" cleaners";const svLabel={regular:"Standard Regular",deep:"Deep Clean",quarterly:"Quarterly Deep"}[sv];const titleLine=sq>0?`${svLabel} — ${sq.toLocaleString()} sq ft · ${spLabel}`:`${svLabel} — ${spLabel} (parameters based)`;const freqShort=FREQ_SHORT[freqDisc],visits=VISITS_PM[freqDisc];let contractHtml='';if(freqDisc>0&&visits){const contractPrice=cManualPrice!==null?cManualPrice:totalPrice;const contractProfit=contractPrice-totalCost;const mRev=contractPrice*visits,mPro=contractProfit*visits,aRev=mRev*12,aPro=mPro*12;const todayISO=new Date().toISOString().split('T')[0];const endD=new Date();endD.setFullYear(endD.getFullYear()+1);const endISO=endD.toISOString().split('T')[0];contractHtml=`<div class="contract-card"><div class="contract-header"><div class="contract-header-title">Contract value — ${freqShort}</div><div class="contract-header-badge">${visits===1?'1 visit/month':visits+' visits/month'}</div></div><div class="date-row"><div class="date-field"><span class="date-label">Contract start</span><input type="date" id="c-cstart" value="${todayISO}"></div><div class="date-field"><span class="date-label">Contract end</span><input type="date" id="c-cend" value="${endISO}"></div></div><div class="contract-grid"><div class="contract-metric"><div class="contract-metric-label">Per visit</div><div class="contract-metric-val teal">${fmt(contractPrice)}</div><div class="contract-metric-sub">${fmt(contractProfit)} profit</div></div><div class="contract-metric"><div class="contract-metric-label">Monthly</div><div class="contract-metric-val teal">${fmt(mRev)}</div><div class="contract-metric-sub">${fmt(mPro)} profit</div></div><div class="contract-metric"><div class="contract-metric-label">Annual</div><div class="contract-metric-val green">${fmt(aRev)}</div><div class="contract-metric-sub">${fmt(aPro)} profit</div></div></div><div class="contract-row"><span class="dl">Monthly revenue</span><span class="dv green">${fmt(mRev)}</span></div><div class="contract-row"><span class="dl">Annual revenue</span><span class="dv green">${fmt(aRev)}</span></div><div class="contract-row highlight"><span class="dl">Annual profit</span><span class="dv">${fmt(aPro)}</span></div></div>`;}
 out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Estimated price</div><div class="metric-val teal" id="c-metric-quote">${fmt(dp)}</div><div class="metric-note" id="c-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmt(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Estimated time</div><div class="metric-val">${fmtTime(adjHrs)}</div><div class="metric-note">${staffLabel}</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="c-metric-profit">${fmt(profit)}</div><div class="metric-note" id="c-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">${titleLine}</div>${sq>0?`<div class="detail-row"><span class="dl">Rate per sq ft</span><span class="dv">$${rate.toFixed(2)}/sq ft</span></div><div class="detail-row"><span class="dl">Base price</span><span class="dv">${fmt(sqftPrice)}</span></div>`:''}${isMin&&sq>0?`<div class="detail-row"><span class="dl">Minimum charge applied</span><span class="dv amber">${fmt(sqftPrice)}</span></div>`:''}${freqDisc>0&&discAmt>0?`<div class="detail-row"><span class="dl">Frequency discount (${freqLabel})</span><span class="dv" style="color:#0F6E56">− ${fmt(discAmt)}</span></div>`:''}${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}
 <div class="divider"></div><div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>${buildEditPrice(dp,'onCommPriceOverride','resetCommPrice','c-price-override')}${buildTaxSection(dp,'c-tax-before','c-tax-amt','c-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Staff assigned</span><span class="dv">${staffLabel} · $${combinedRate.toFixed(2)}/hr combined</span></div><div class="detail-row"><span class="dl">Estimated time</span><span class="dv">${fmtTime(adjHrs)}</span></div>${cleanerRows(laborDetails,adjHrs)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="c-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="detail-row"><span class="dl">Recommended frequency</span><span class="dv">${r.freq}</span></div>${r.cert?`<div class="detail-row"><span class="dl">Certification required</span><span class="dv red">${r.cert}</span></div>`:''}<div class="badges"><span class="badge badge-teal">${staffLabel}</span>${freqDisc>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${freqDisc}% discount</span>`:''}${r.cert?'<span class="badge badge-red">Certification required</span>':''}${isMin?'<span class="badge badge-amber">Minimum charge applied</span>':''}</div></div>${contractHtml}`;}
-
 // ── SMALL EVENT ──
 const SE_EXTRAS=[{id:"se_attendant",label:"Event Setup Attendant",price:55,time:1.0},{id:"se_steward",label:"Event Steward",price:80,time:2.0},{id:"se_table",label:"Table Setup and Breakdown",price:15,time:0.33,qty:true},{id:"se_singleoven",label:"Single Oven Cleaning",price:50,time:1.0},{id:"se_supplies",label:"Cleaning Supplies",price:15,time:0}];
 let seAutoPrice=0,seManualPrice=null,seLastCost=0;
@@ -585,8 +785,19 @@ function resetSEPrice(){seManualPrice=null;const el=document.getElementById('se-
 function updateSETax(){const dp=seManualPrice!==null?seManualPrice:seAutoPrice,t=dp*TAX,w=dp+t,np=dp-seLastCost,nm=dp>0?Math.round((np/dp)*100):0;[['se-tax-before',fmtFull(dp)],['se-tax-amt','+ $'+t.toFixed(2)],['se-tax-total',fmtFull(w)],['se-metric-quote',fmtFull(dp)],['se-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],['se-metric-profit','$'+Math.round(np).toLocaleString()],['se-metric-margin',nm+'% margin'],['se-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});const pm=document.getElementById('se-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');}
 function buildSEExtras(){const grid=document.getElementById('se-extras-grid');grid.innerHTML='';SE_EXTRAS.forEach(e=>{const div=document.createElement('div');div.className='extra-item';div.id='se-item-'+e.id;if(e.qty){div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="seChangeQty('${e.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="se-qty-${e.id}" style="min-width:20px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="seChangeQty('${e.id}',1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;}else{div.innerHTML=`<input type="checkbox" id="se-ex-${e.id}" onchange="calcSmallEvent()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('se-ex-'+e.id);cb.checked=!cb.checked;calcSmallEvent();}div.classList.toggle('selected',document.getElementById('se-ex-'+e.id).checked);};}grid.appendChild(div);});}
 function seChangeQty(id,delta){const el=document.getElementById('se-qty-'+id),nv=Math.max(0,(parseInt(el.textContent)||0)+delta);el.textContent=nv;document.getElementById('se-item-'+id).classList.toggle('selected',nv>0);calcSmallEvent();}
+function resetSmallEventTab(){
+  const hrs=document.getElementById('se-hrs');if(hrs)hrs.value='2';
+  const mins=document.getElementById('se-mins');if(mins)mins.value='0';
+  const crew=document.getElementById('se-crew');if(crew)crew.value='1';
+  SE_EXTRAS.forEach(e=>{
+    if(e.qty){const el=document.getElementById('se-qty-'+e.id);if(el)el.textContent='0';const item=document.getElementById('se-item-'+e.id);if(item)item.classList.remove('selected');}
+    else{const cb=document.getElementById('se-ex-'+e.id);if(cb)cb.checked=false;const item=document.getElementById('se-item-'+e.id);if(item)item.classList.remove('selected');}
+  });
+  const laborGrid=document.getElementById('se-labor-grid');if(laborGrid)laborGrid.innerHTML='';
+  seManualPrice=null;
+  calcSmallEvent();
+}
 function calcSmallEvent(){const BASE_RATE=75,MIN_HRS=2,hrs=parseFloat(document.getElementById('se-hrs').value)||MIN_HRS,mins=parseFloat(document.getElementById('se-mins').value)||0,crew=parseInt(document.getElementById('se-crew').value)||1,estHours=Math.max(hrs+(mins/60),MIN_HRS);buildLaborInputs(crew,'se','calcSmallEvent');const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'se');let extSub=0,extTime=0;const extLines=[];SE_EXTRAS.forEach(e=>{if(e.qty){const qty=parseInt((document.getElementById('se-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}}else{const cb=document.getElementById('se-ex-'+e.id),item=document.getElementById('se-item-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}else if(item)item.classList.remove('selected');}});const adjTime=Math.max(estHours+(extTime/crew),MIN_HRS),basePrice=BASE_RATE*estHours,totalPrice=basePrice+extSub,laborCost=combinedRate*adjTime,supplies=15,totalCost=laborCost+supplies,profit=totalPrice-totalCost,margin=Math.round((profit/totalPrice)*100);seAutoPrice=totalPrice;seLastCost=totalCost;const dp=seManualPrice!==null?seManualPrice:totalPrice,taxAmt=dp*TAX,priceWithTax=dp+taxAmt;const out=document.getElementById('se-output');out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="se-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="se-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaner${crew>1?'s':''} on site</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="se-metric-profit">${fmt(profit)}</div><div class="metric-note" id="se-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Small Event Cleaning · ${fmtTime(adjTime)} @ $${BASE_RATE.toFixed(2)}/hr</div><div class="detail-row"><span class="dl">Hourly rate</span><span class="dv">$${BASE_RATE.toFixed(2)}/hr</span></div><div class="detail-row"><span class="dl">Estimated time</span><span class="dv">${fmtTime(estHours)}</span></div><div class="detail-row"><span class="dl">Hourly subtotal</span><span class="dv">${fmt(basePrice)}</span></div>${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}<div class="divider"></div><div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>${buildEditPrice(dp,'onSEPriceOverride','resetSEPrice','se-price-override')}${buildTaxSection(dp,'se-tax-before','se-tax-amt','se-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaner${crew>1?'s':''} · $${combinedRate.toFixed(2)}/hr combined</span></div><div class="detail-row"><span class="dl">Time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>${cleanerRows(laborDetails,adjTime)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="se-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="badges"><span class="badge badge-teal">${crew} cleaner${crew>1?'s':''} assigned</span><span class="badge badge-teal">${fmtTime(adjTime)} on site</span>${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}</div></div>`;}
-
 // ── MEDIUM EVENT ──
 const ME_PARAMS={spaces:{label:"Additional Event Space/Room",price:80,time:1.5},bathrefresh:{label:"Bathroom Refresh",price:25,time:0.75},multibath:{label:"Multi User Bathroom",price:90,time:1.5},pre:{label:"Pre Event Cleaning",price:75,time:1.5},post:{label:"Post Event Cleaners",price:90,time:1.5},stewards:{label:"Event Stewards",price:95,time:2.5}};
 const ME_EXTRAS=[{id:"me_setupsteward",label:"Event Setup Steward",price:55,time:1.0},{id:"me_table",label:"Table Setup and Breakdown",price:15,time:0.33,qty:true},{id:"me_supplies",label:"Cleaning Supplies",price:15,time:0},{id:"me_org",label:"Organizational Help",price:40,time:1.0}];
@@ -596,8 +807,18 @@ function resetMEPrice(){meManualPrice=null;const el=document.getElementById('me-
 function updateMETax(){const dp=meManualPrice!==null?meManualPrice:meAutoPrice,t=dp*TAX,w=dp+t,np=dp-meLastCost,nm=dp>0?Math.round((np/dp)*100):0;[['me-tax-before',fmtFull(dp)],['me-tax-amt','+ $'+t.toFixed(2)],['me-tax-total',fmtFull(w)],['me-metric-quote',fmtFull(dp)],['me-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],['me-metric-profit','$'+Math.round(np).toLocaleString()],['me-metric-margin',nm+'% margin'],['me-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});const pm=document.getElementById('me-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');}
 function buildMEExtras(){const grid=document.getElementById('me-extras-grid');grid.innerHTML='';ME_EXTRAS.forEach(e=>{const div=document.createElement('div');div.className='extra-item';div.id='me-item-'+e.id;if(e.qty){div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="meChangeQty('${e.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="me-qty-${e.id}" style="min-width:20px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="meChangeQty('${e.id}',1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;}else{div.innerHTML=`<input type="checkbox" id="me-ex-${e.id}" onchange="calcMediumEvent()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('me-ex-'+e.id);cb.checked=!cb.checked;calcMediumEvent();}div.classList.toggle('selected',document.getElementById('me-ex-'+e.id).checked);};}grid.appendChild(div);});}
 function meChangeQty(id,delta){const el=document.getElementById('me-qty-'+id),nv=Math.max(0,(parseInt(el.textContent)||0)+delta);el.textContent=nv;document.getElementById('me-item-'+id).classList.toggle('selected',nv>0);calcMediumEvent();}
+function resetMediumEventTab(){
+  const crew=document.getElementById('me-crew');if(crew)crew.value='2';
+  ['spaces','bathrefresh','multibath','pre','post','stewards'].forEach(k=>{const el=document.getElementById('me-'+k);if(el)el.value='0';});
+  ME_EXTRAS.forEach(e=>{
+    if(e.qty){const el=document.getElementById('me-qty-'+e.id);if(el)el.textContent='0';const item=document.getElementById('me-item-'+e.id);if(item)item.classList.remove('selected');}
+    else{const cb=document.getElementById('me-ex-'+e.id);if(cb)cb.checked=false;const item=document.getElementById('me-item-'+e.id);if(item)item.classList.remove('selected');}
+  });
+  const laborGrid=document.getElementById('me-labor-grid');if(laborGrid)laborGrid.innerHTML='';
+  meManualPrice=null;
+  calcMediumEvent();
+}
 function calcMediumEvent(){const BASE=255,crew=parseInt(document.getElementById('me-crew').value)||2;buildLaborInputs(crew,'me','calcMediumEvent');const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'me');let paramSub=0,paramTime=0;const paramLines=[];['spaces','bathrefresh','multibath','pre','post','stewards'].forEach(k=>{const count=parseInt((document.getElementById('me-'+k)||{value:'0'}).value)||0;if(count>0){const pp=ME_PARAMS[k].price*count,pt=ME_PARAMS[k].time*count;paramSub+=pp;paramTime+=pt;paramLines.push({label:ME_PARAMS[k].label,count,price:pp});}});let extSub=0,extTime=0;const extLines=[];ME_EXTRAS.forEach(e=>{if(e.qty){const qty=parseInt((document.getElementById('me-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}}else{const cb=document.getElementById('me-ex-'+e.id),item=document.getElementById('me-item-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}else if(item)item.classList.remove('selected');}});const totalPrice=BASE+paramSub+extSub,adjTime=Math.max((paramTime+extTime)/crew,1),laborCost=combinedRate*adjTime,supplies=20,totalCost=laborCost+supplies,profit=totalPrice-totalCost,margin=Math.round((profit/totalPrice)*100);meAutoPrice=totalPrice;meLastCost=totalCost;const dp=meManualPrice!==null?meManualPrice:totalPrice,taxAmt=dp*TAX,priceWithTax=dp+taxAmt;const out=document.getElementById('me-output');out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="me-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="me-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaners on site</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="me-metric-profit">${fmt(profit)}</div><div class="metric-note" id="me-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Medium Event Cleaning · ${crew} cleaners · up to 30 guests</div><div class="detail-row"><span class="dl">Base price (2 cleaners included)</span><span class="dv">${fmt(BASE)}</span></div>${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}<div class="divider"></div><div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>${buildEditPrice(dp,'onMEPriceOverride','resetMEPrice','me-price-override')}${buildTaxSection(dp,'me-tax-before','me-tax-amt','me-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaners · $${combinedRate.toFixed(2)}/hr combined</span></div><div class="detail-row"><span class="dl">Est. time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>${cleanerRows(laborDetails,adjTime)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="me-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="badges"><span class="badge badge-teal">${crew} cleaners assigned</span><span class="badge badge-teal">${fmtTime(adjTime)} on site</span>${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}</div></div>`;}
-
 // ── INIT ──
 buildHomeExtras();buildSEExtras();buildMEExtras();
 switchHomeSvc('standard',document.querySelector('#tab-home .sub-tab-btn'));
