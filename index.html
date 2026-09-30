@@ -1,4 +1,6 @@
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,7 +194,7 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
     <div class="form-title" id="h-hourly-title">Estimated Job Duration</div>
     <div class="mode-banner"><strong>Hourly rate service.</strong> Enter estimated hours based on your conversation with the client.</div>
     <div class="hours-grid">
-      <div class="field"><label>Estimated hours</label><div class="hours-input-wrap"><input type="number" id="h-hrs" value="3" min="0.5" max="24" step="0.5" oninput="calcHome()"><span>hrs</span></div></div>
+      <div class="field"><label>Estimated hours</label><div class="hours-input-wrap"><input type="number" id="h-hrs" value="2" min="0.5" max="24" step="0.5" oninput="calcHome()"><span>hrs</span></div></div>
       <div class="field"><label>Additional minutes</label><div class="hours-input-wrap"><input type="number" id="h-mins" value="0" min="0" max="59" step="15" oninput="calcHome()"><span>min</span></div></div>
     </div>
   </div>
@@ -469,7 +471,7 @@ const H_SVC={
 };
 const H_ROOMS={master:{label:"Master Bedroom and Bath",price:70,standard:70,deep:70,movein:70,moveout:70},beds:{label:"Bedroom",price:30,standard:30,deep:30,movein:30,moveout:30},fullbaths:{label:"Full Bathroom",price:35,standard:35,deep:35,movein:35,moveout:35},halfbaths:{label:"Half Bathroom",price:20,standard:20,deep:20,movein:20,moveout:20},living:{label:"Living Room",price:30,standard:30,deep:30,movein:30,moveout:30},dining:{label:"Dining Room",price:22,standard:22,deep:22,movein:22,moveout:22},kitchen:{label:"Kitchen",price:45,standard:45,deep:45,movein:45,moveout:45},office:{label:"Home Office",price:45,standard:45,deep:45,movein:45,moveout:45},game:{label:"Game Room",price:22,standard:22,deep:22,movein:22,moveout:22},utility:{label:"Utility Room",price:18,standard:18,deep:18,movein:18,moveout:18}};
 const H_ROOM_TIME={master:{standard:1.75,deep:2.75,movein:2.0,moveout:2.5},beds:{standard:0.75,deep:1.0,movein:0.83,moveout:0.92},fullbaths:{standard:0.75,deep:1.17,movein:0.92,moveout:1.0},halfbaths:{standard:0.5,deep:0.67,movein:0.5,moveout:0.58},living:{standard:0.75,deep:0.92,movein:0.75,moveout:0.83},dining:{standard:0.5,deep:0.67,movein:0.58,moveout:0.63},kitchen:{standard:1.0,deep:1.5,movein:1.25,moveout:1.42},office:{standard:0.75,deep:1.0,movein:0.92,moveout:1.0},game:{standard:0.5,deep:0.75,movein:0.58,moveout:0.67},utility:{standard:0.33,deep:0.58,movein:0.42,moveout:0.5}};
-const H_EXTRAS=[{id:"h_baseboards",label:"Baseboards",price:35,time:0.67},{id:"h_bathcab",label:"Bathroom Interior Cabinets",price:35,time:0.5},{id:"h_carpet",label:"Carpet Cleaning (per room)",price:40,time:0.58,qty:true},{id:"h_supplies",label:"Cleaning Supplies",price:15,time:0},{id:"h_dishwasher",label:"Dishwasher Deep Clean",price:25,time:0.25},{id:"h_doubleoven",label:"Double Oven Cleaning",price:75,time:1.5},{id:"h_kitchencab",label:"Kitchen Interior Cabinets",price:55,time:0.75},{id:"h_laundry",label:"Laundry Service (per 2 loads)",price:45,time:1.0,qty:true},{id:"h_org",label:"Organizational Help",price:40,time:1.0},{id:"h_patio_back",label:"Back Patio",price:25,time:0.58},{id:"h_patio_front",label:"Front Patio",price:25,time:0.58},{id:"h_rangeoven",label:"Range Oven Cleaning",price:90,time:2.0},{id:"h_fridge",label:"Refrigerator",price:40,time:0.75},{id:"h_singleoven",label:"Single Oven Cleaning",price:50,time:1.0},{id:"h_venetian",label:"Venetian Blinds (per window)",price:35,time:0.67,qty:true},{id:"h_washerdryer",label:"Washer and Dryer Deep Clean",price:45,time:1.0},{id:"h_garage_std",label:"Garage Standard Cleaning",price:35,time:0.42},{id:"h_garage_deep",label:"Garage Deep Cleaning",price:50,time:0.75}];
+const H_EXTRAS=[{id:"h_baseboards",label:"Baseboards",price:35,time:0.67},{id:"h_intcab",label:"Interior Cabinets (Kitchen/Bathrooms)",price:75,time:1.25},{id:"h_bathcab",label:"Bathroom Interior Cabinets",price:35,time:0.5},{id:"h_carpet",label:"Carpet Cleaning (per room)",price:40,time:0.58,qty:true},{id:"h_supplies",label:"Cleaning Supplies",price:15,time:0},{id:"h_dishwasher",label:"Dishwasher Deep Clean",price:25,time:0.25},{id:"h_doubleoven",label:"Double Oven Cleaning",price:75,time:1.5},{id:"h_kitchencab",label:"Kitchen Interior Cabinets",price:55,time:0.75},{id:"h_laundry",label:"Laundry Service (per 2 loads)",price:45,time:1.0,qty:true},{id:"h_org",label:"Organizational Help",price:40,time:1.0},{id:"h_patio_back",label:"Back Patio",price:25,time:0.58},{id:"h_patio_front",label:"Front Patio",price:25,time:0.58},{id:"h_rangeoven",label:"Range Oven Cleaning",price:90,time:2.0},{id:"h_fridge",label:"Refrigerator",price:40,time:0.75},{id:"h_singleoven",label:"Single Oven Cleaning",price:50,time:1.0},{id:"h_venetian",label:"Venetian Blinds (per window)",price:35,time:0.67,qty:true},{id:"h_washerdryer",label:"Washer and Dryer Deep Clean",price:45,time:1.0},{id:"h_garage_std",label:"Garage Standard Cleaning",price:35,time:0.42},{id:"h_garage_deep",label:"Garage Deep Cleaning",price:50,time:0.75}];
 const H_MESSAGES={
   standard:`Thank you for reaching out to Bee Pristine!
  
@@ -482,6 +484,8 @@ Our Standard Regular Cleaning is designed to keep your home consistently fresh, 
 🚿 Bathrooms: Full sanitization of toilets inside, outside and behind. Shower and tub surfaces cleaned. Sink and faucets scrubbed and polished. Mirrors cleaned streak-free. Trash emptied and liner replaced.
  
 ➕ Available Add-Ons
+• Baseboards
+• Interior Cabinets (Kitchen/Bathrooms)
 • Interior Oven Cleaning
 • Refrigerator Deep Clean
 • Laundry Service per load (2): (wash, dry, fold & put away)
@@ -614,7 +618,7 @@ function resetHomeExtras(){
     if(el)el.value='0';
   });
   // Reset hours
-  const hrsEl=document.getElementById('h-hrs');if(hrsEl)hrsEl.value='3';
+  const hrsEl=document.getElementById('h-hrs');if(hrsEl)hrsEl.value='2';
   const minsEl=document.getElementById('h-mins');if(minsEl)minsEl.value='0';
   // Reset frequency and crew
   const freqEl=document.getElementById('h-freq');if(freqEl)freqEl.value='0';
@@ -678,12 +682,22 @@ function generateHomeMessage(){
   } else {
     hrsText=formatCount(hrsFrom)+'-hour';
   }
+  const freqDisc=parseInt(document.getElementById('h-freq').value)||0;
+  const freqLabel={0:'one-time service',5:'flexible recurring service',10:'monthly cleaning plan',20:'bi-weekly cleaning plan',25:'weekly cleaning plan'}[freqDisc]||'one-time service';
+  const freqNote=freqDisc===0?'':`\n\nThis quote is for your ${freqLabel}.`;
   let msg=tmpl;
   msg=msg.replace('[# bedroom]',formatCount(bed)+'-bedroom');
   msg=msg.replace('[# bathroom]',formatCount(bath)+'-bathroom');
   msg=msg.replace('[amount]',amount.toLocaleString());
   msg=msg.replace('[# hr]',hrsText);
   if(zip)msg=msg.replace('[zip code]',zip);
+  // Inject frequency line right after the rate line
+  if(freqNote){
+    msg=msg.replace(
+      /For your .+-bedroom, .+-bathroom home, the rate is \$[\d,]+\./,
+      m=>m+freqNote
+    );
+  }
   const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
   const outWrap=document.getElementById('h-msg-output');if(outWrap)outWrap.style.display='block';
   const cp=document.getElementById('h-msg-copied');if(cp)cp.style.display='none';
