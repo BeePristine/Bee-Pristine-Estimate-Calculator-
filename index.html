@@ -1,6 +1,8 @@
 
 
 
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -185,7 +187,7 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
   <div class="form-card">
     <div class="form-title">Service Details</div>
     <div class="form-grid">
-      <div class="field"><label>Frequency</label><select id="h-freq" onchange="calcHome()"><option value="0">One-time / As needed</option><option value="5">Flexible — 5% off</option><option value="10">Monthly — 10% off</option><option value="20">Bi-Weekly — 20% off</option><option value="25">Weekly — 25% off</option></select></div>
+      <div class="field"><label>Frequency</label><select id="h-freq" onchange="hManualPrice=null;calcHome()"><option value="0">One-time / As needed</option><option value="5">Flexible — 5% off</option><option value="10">Monthly — 10% off</option><option value="20">Bi-Weekly — 20% off</option><option value="25">Weekly — 25% off</option></select></div>
       <div class="field"><label>Crew size</label><select id="h-crew" onchange="calcHome()"><option value="auto">Auto (recommended)</option><option value="1">1 cleaner</option><option value="2">2 cleaners</option><option value="3">3 cleaners</option><option value="4">4 cleaners</option></select></div>
     </div>
     <div class="crew-note-box" id="h-crew-note">⚠️ Manual crew selected. Recommended: <strong id="h-rec-crew"></strong>.</div>
@@ -432,14 +434,14 @@ function buildEditPrice(dp,overrideFn,resetFn,inputId){
 }
 function buildLaborInputs(crew,prefix,calcFn){
   const grid=document.getElementById(prefix+'-labor-grid');if(!grid)return;
-  const existing={};for(let i=1;i<=4;i++){const el=document.getElementById(prefix+'-l'+i);if(el)existing[i]=parseFloat(el.value)||26.50;}
+  const existing={};for(let i=1;i<=4;i++){const el=document.getElementById(prefix+'-l'+i);if(el)existing[i]=parseFloat(el.value)||24;}
   grid.innerHTML='';
-  for(let i=1;i<=crew;i++){const v=(existing[i]||26.50).toFixed(2);const d=document.createElement('div');d.className='labor-field';d.innerHTML=`<label>Cleaner ${i}</label><div class="labor-input-wrap"><span>$</span><input type="number" id="${prefix}-l${i}" value="${v}" min="10" max="100" step="0.50" inputmode="decimal" oninput="${calcFn}()"></div><div class="labor-note">per hour</div>`;grid.appendChild(d);}
+  for(let i=1;i<=crew;i++){const v=(existing[i]||24).toFixed(2);const d=document.createElement('div');d.className='labor-field';d.innerHTML=`<label>Cleaner ${i}</label><div class="labor-input-wrap"><span>$</span><input type="number" id="${prefix}-l${i}" value="${v}" min="10" max="100" step="0.50" inputmode="decimal" oninput="${calcFn}()"></div><div class="labor-note">per hour</div>`;grid.appendChild(d);}
   const card=document.getElementById(prefix+'-labor-card');if(card)card.style.display='block';
 }
 function getLaborRates(crew,prefix){
   let combined=0;const details=[];
-  for(let i=1;i<=crew;i++){const el=document.getElementById(prefix+'-l'+i);const r=el?parseFloat(el.value)||26.50:26.50;combined+=r;details.push(r);}
+  for(let i=1;i<=crew;i++){const el=document.getElementById(prefix+'-l'+i);const r=el?parseFloat(el.value)||24:24;combined+=r;details.push(r);}
   return{combined,details};
 }
 function cleanerRows(details,adjTime){
@@ -465,9 +467,9 @@ function switchTab(id,btn){
 // ── HOME CALCULATOR ──
 const H_SVC={
   standard:{label:"Standard Regular Cleaning",base:55,minHrs:2,rateKey:"standard",hourly:true},
-  deep:{label:"Deep Cleaning",base:140,minHrs:3,rateKey:"deep",hourly:false},
+  deep:{label:"Deep Cleaning",base:120,minHrs:3,rateKey:"deep",hourly:false},
   movein:{label:"Move In Cleaning",base:65,minHrs:2,rateKey:"movein",hourly:true},
-  moveout:{label:"Move Out Cleaning",base:180,minHrs:4,rateKey:"moveout",hourly:false}
+  moveout:{label:"Move Out Cleaning",base:85,minHrs:3,rateKey:"moveout",hourly:false}
 };
 const H_ROOMS={master:{label:"Master Bedroom and Bath",price:70,standard:70,deep:70,movein:70,moveout:70},beds:{label:"Bedroom",price:30,standard:30,deep:30,movein:30,moveout:30},fullbaths:{label:"Full Bathroom",price:35,standard:35,deep:35,movein:35,moveout:35},halfbaths:{label:"Half Bathroom",price:20,standard:20,deep:20,movein:20,moveout:20},living:{label:"Living Room",price:30,standard:30,deep:30,movein:30,moveout:30},dining:{label:"Dining Room",price:22,standard:22,deep:22,movein:22,moveout:22},kitchen:{label:"Kitchen",price:45,standard:45,deep:45,movein:45,moveout:45},office:{label:"Home Office",price:45,standard:45,deep:45,movein:45,moveout:45},game:{label:"Game Room",price:22,standard:22,deep:22,movein:22,moveout:22},utility:{label:"Utility Room",price:18,standard:18,deep:18,movein:18,moveout:18}};
 const H_ROOM_TIME={master:{standard:1.75,deep:2.75,movein:2.0,moveout:2.5},beds:{standard:0.75,deep:1.0,movein:0.83,moveout:0.92},fullbaths:{standard:0.75,deep:1.17,movein:0.92,moveout:1.0},halfbaths:{standard:0.5,deep:0.67,movein:0.5,moveout:0.58},living:{standard:0.75,deep:0.92,movein:0.75,moveout:0.83},dining:{standard:0.5,deep:0.67,movein:0.58,moveout:0.63},kitchen:{standard:1.0,deep:1.5,movein:1.25,moveout:1.42},office:{standard:0.75,deep:1.0,movein:0.92,moveout:1.0},game:{standard:0.5,deep:0.75,movein:0.58,moveout:0.67},utility:{standard:0.33,deep:0.58,movein:0.42,moveout:0.5}};
@@ -711,8 +713,8 @@ function copyHomeMessage(){
     ta.select();document.execCommand('copy');showCopied();
   }
 }
-function applyHomeDiscount(){const code=document.getElementById('h-disc-code').value.trim(),pct=parseFloat(document.getElementById('h-disc-pct').value);if(!code){alert('Please enter a discount code name.');return;}if(!pct||pct<=0||pct>100){alert('Please enter a valid percentage.');return;}hDiscCode=code;hDiscPct=pct;document.getElementById('h-disc-applied').style.display='flex';document.getElementById('h-disc-text').textContent=code+' ('+pct+'% off)';calcHome();}
-function removeHomeDiscount(){hDiscCode=null;hDiscPct=0;const dc=document.getElementById('h-disc-code');if(dc)dc.value='';const dp=document.getElementById('h-disc-pct');if(dp)dp.value='';const da=document.getElementById('h-disc-applied');if(da)da.style.display='none';calcHome();}
+function applyHomeDiscount(){const code=document.getElementById('h-disc-code').value.trim(),pct=parseFloat(document.getElementById('h-disc-pct').value);if(!code){alert('Please enter a discount code name.');return;}if(!pct||pct<=0||pct>100){alert('Please enter a valid percentage.');return;}hDiscCode=code;hDiscPct=pct;hManualPrice=null;document.getElementById('h-disc-applied').style.display='flex';document.getElementById('h-disc-text').textContent=code+' ('+pct+'% off)';calcHome();}
+function removeHomeDiscount(){hDiscCode=null;hDiscPct=0;hManualPrice=null;const dc=document.getElementById('h-disc-code');if(dc)dc.value='';const dp=document.getElementById('h-disc-pct');if(dp)dp.value='';const da=document.getElementById('h-disc-applied');if(da)da.style.display='none';calcHome();}
 function onHomePriceOverride(v){const val=parseFloat(v);hManualPrice=(!isNaN(val)&&val>=0)?val:null;updateHomeTax();}
 function resetHomePrice(){hManualPrice=null;const el=document.getElementById('h-price-override');if(el)el.value=hAutoPrice.toFixed(2);updateHomeTax();}
 function updateHomeTax(){
