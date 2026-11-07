@@ -715,7 +715,7 @@ function generateHomeMessage(){
       m=>m+freqNote
     );
   }
-  const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
+  msg+='\n\nLearn more about us at https://beepristine.com/';const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
   const outWrap=document.getElementById('h-msg-output');if(outWrap)outWrap.style.display='block';
   const cp=document.getElementById('h-msg-copied');if(cp)cp.style.display='none';
 }
@@ -959,7 +959,7 @@ function generateCommMessage(){
     msg=msg.replace('[# hr]',hrsText);
   }
   if(zip)msg=msg.replace('[zip code]',zip);
-  const ta=document.getElementById('c-msg-text');if(ta)ta.value=msg;
+  msg+='\n\nLearn more about us at https://beepristine.com/';const ta=document.getElementById('c-msg-text');if(ta)ta.value=msg;
   const outWrap=document.getElementById('c-msg-output');if(outWrap)outWrap.style.display='block';
   const cp=document.getElementById('c-msg-copied');if(cp)cp.style.display='none';
 }
