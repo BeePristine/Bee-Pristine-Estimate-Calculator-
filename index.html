@@ -287,9 +287,13 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
         <div class="field"><label>Standard hours</label><input type="number" id="h-recur-hrs" value="2" placeholder="e.g. 2.5" min="0" max="24" step="0.25" oninput="updateRecurDisplay()"></div>
         <div class="field"><label>Standard hours — to (optional)</label><input type="number" id="h-recur-hrs-to" placeholder="e.g. 3" min="0" max="24" step="0.25" oninput="updateRecurDisplay()"></div>
       </div>
+      <div style="margin-top:12px;">
+        <div class="form-title" style="margin-bottom:8px;">Add-ons for the standard cleaning (optional)</div>
+        <div class="extras-grid" id="hr-extras-grid"></div>
+      </div>
       <div style="margin-top:10px;padding:9px 13px;background:#fff;border:0.5px solid #A8DBC8;border-radius:10px;font-size:13px;color:#0F6E56;">
         Calculated price per visit: <strong id="h-recur-price-out">—</strong>
-        <span style="color:#9CA3AF;font-weight:400;"> · based on $55/hr and the selected frequency</span>
+        <span style="color:#9CA3AF;font-weight:400;"> · $55/hr, plus add-ons, with the frequency discount applied</span>
       </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
@@ -710,14 +714,69 @@ function fillHomeMsgFromCalc(){
 function recurFreqPhrase(f){
   return ({25:'on a weekly schedule',20:'every two weeks',10:'on a monthly schedule'})[f]||'on your schedule (weekly, every two weeks or monthly)';
 }
+// Build the add-ons picker for the recurring standard cleaning (a Standard Clean includes no
+// add-ons by default, so every extra is selectable here).
+function buildRecurExtras(){
+  const grid=document.getElementById('hr-extras-grid');if(!grid)return;grid.innerHTML='';
+  H_EXTRAS.forEach(e=>{
+    if(e.id==='h_supplies')return; // supplies is a fee, not a called-out add-on
+    if(e.qty)return; // quantity add-ons (carpet, laundry, blinds) hidden from recurring to keep it simple
+    const div=document.createElement('div');div.className='extra-item';div.id='hr-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="hrChangeQty('${e.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="hr-qty-${e.id}" style="min-width:20px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="hrChangeQty('${e.id}',1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    }else{
+      div.innerHTML=`<input type="checkbox" id="hr-ex-${e.id}" onchange="updateRecurDisplay()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('hr-ex-'+e.id);cb.checked=!cb.checked;updateRecurDisplay();}div.classList.toggle('selected',document.getElementById('hr-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function hrChangeQty(id,delta){const el=document.getElementById('hr-qty-'+id);const nv=Math.max(0,(parseInt(el.textContent)||0)+delta);el.textContent=nv;document.getElementById('hr-item-'+id).classList.toggle('selected',nv>0);updateRecurDisplay();}
+function getRecurExtras(){
+  const sel=[];
+  H_EXTRAS.forEach(e=>{
+    if(e.id==='h_supplies'||e.qty)return;
+    const cb=document.getElementById('hr-ex-'+e.id);if(cb&&cb.checked)sel.push({label:e.label,price:e.price,qty:1});
+  });
+  return sel;
+}
+function getRecurExtrasSub(){return getRecurExtras().reduce((s,e)=>s+e.price,0);}
+function getRecurExtraLabels(){return getRecurExtras().map(e=>e.qty>1?`${e.label} (${e.qty})`:e.label);}
+// Shared helpers for the "included in this quote" callout.
+function joinList(arr){
+  if(arr.length===0)return '';
+  if(arr.length===1)return arr[0];
+  if(arr.length===2)return arr[0]+' and '+arr[1];
+  return arr.slice(0,-1).join(', ')+' and '+arr[arr.length-1];
+}
+function extrasSentence(labels){
+  if(!labels||!labels.length)return '';
+  let verb;
+  if(labels.length>1)verb='are';
+  else{const base=labels[0].replace(/\s*\(.*\)/,'').trim();verb=/s$/i.test(base)?'are':'is';}
+  return `${joinList(labels)} ${verb} included in this quote.`;
+}
+// Selected paid extras on the MAIN service (excludes the ones already included in that service's scope).
+function getHomeExtraCalloutLabels(){
+  const hIncl=H_INCLUDED[hSvc]||[];const labels=[];
+  H_EXTRAS.forEach(e=>{
+    if(e.id==='h_supplies'||hIncl.includes(e.id))return;
+    if(e.qty){const qty=parseInt((document.getElementById('h-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0)labels.push(qty>1?`${e.label} (${qty})`:e.label);}
+    else{const cb=document.getElementById('h-ex-'+e.id);if(cb&&cb.checked)labels.push(e.label);}
+  });
+  if(hPackQty>0)labels.push(hPackQty>1?`Packing Service (${hPackQty})`:'Packing Service');
+  if(hUnpackQty>0)labels.push(hUnpackQty>1?`Unpacking Service (${hUnpackQty})`:'Unpacking Service');
+  return labels;
+}
 function computeRecurStandard(){
   const RATE=H_SVC.standard.base; // $55/hr, same as the Standard Regular Cleaning rate
   const f=parseInt((document.getElementById('h-recur-freq')||{value:'0'}).value)||0;
   const hFrom=parseFloat((document.getElementById('h-recur-hrs')||{value:''}).value);
   const toRaw=(document.getElementById('h-recur-hrs-to')||{value:''}).value;
   const hTo=toRaw!==''?parseFloat(toRaw):null;
-  // Price math mirrors the main calculator: base = rate x hours, then subtract the frequency discount.
-  function priceFor(h){const base=RATE*h;const disc=f>0?Math.round(base*(f/100)):0;return Math.round(base-disc);}
+  const extrasSub=getRecurExtrasSub();
+  // Price math mirrors the main calculator: base = (rate x hours) + add-ons, then subtract the frequency discount.
+  function priceFor(h){const base=RATE*h+extrasSub;const disc=f>0?Math.round(base*(f/100)):0;return Math.round(base-disc);}
   let priceFrom=null,priceTo=null,hrsText='';
   if(!isNaN(hFrom)&&hFrom>0){
     if(hTo!==null&&!isNaN(hTo)&&hTo>0&&hTo!==hFrom){
@@ -728,8 +787,10 @@ function computeRecurStandard(){
       hrsText=formatCount(hFrom)+'-hour';
       priceFrom=priceFor(hFrom);
     }
+  } else if(extrasSub>0){
+    priceFrom=priceFor(0);
   }
-  return {f,priceFrom,priceTo,hrsText};
+  return {f,priceFrom,priceTo,hrsText,extraLabels:getRecurExtraLabels()};
 }
 function recurPriceText(r){
   if(r.priceFrom===null)return '';
@@ -763,19 +824,22 @@ function generateHomeMessage(){
     hrsText=formatCount(hrsFrom)+'-hour';
   }
   const freqDisc=parseInt(document.getElementById('h-freq').value)||0;
-  const freqLabel={0:'one-time service',5:'flexible recurring service',10:'monthly cleaning plan',20:'bi-weekly cleaning plan',25:'weekly cleaning plan'}[freqDisc]||'one-time service';
-  const freqNote=freqDisc===0?'':`\n\nThis quote is for your ${freqLabel}.`;
+  const freqLabel={0:'one-time service',5:'flexible recurring service',10:'monthly cleaning plan',20:'biweekly cleaning plan',25:'weekly cleaning plan'}[freqDisc]||'one-time service';
   let msg=tmpl;
   msg=msg.replace('[# bedroom]',formatCount(bed)+'-bedroom');
   msg=msg.replace('[# bathroom]',formatCount(bath)+'-bathroom');
   msg=msg.replace('[amount]',amount.toLocaleString());
   msg=msg.replace('[# hr]',hrsText);
   if(zip)msg=msg.replace('[zip code]',zip);
-  // Inject frequency line right after the rate line
-  if(freqNote){
+  // Inject the frequency line and any selected add-ons right after the rate line
+  const mainExtrasSent=extrasSentence(getHomeExtraCalloutLabels());
+  let rateNote='';
+  if(freqDisc!==0)rateNote+=`\n\nThis quote is for your ${freqLabel}.`;
+  if(mainExtrasSent)rateNote+=(rateNote?' ':'\n\n')+mainExtrasSent;
+  if(rateNote){
     msg=msg.replace(
       /For your .+-bedroom, .+-bathroom home, the rate is \$[\d,]+\./,
-      m=>m+freqNote
+      m=>m+rateNote
     );
   }
   const recur=document.getElementById('h-recur-toggle');
@@ -788,7 +852,9 @@ function generateHomeMessage(){
     if(hasP&&hasH)stdLine=` Your recurring Standard Regular Cleaning is ${priceText} per visit and covers about a ${r.hrsText} cleaning.`;
     else if(hasP)stdLine=` Your recurring Standard Regular Cleaning is ${priceText} per visit.`;
     else if(hasH)stdLine=` Your recurring Standard Regular Cleaning covers about a ${r.hrsText} cleaning.`;
-    const recurBlock=`🔁 How your recurring plan works:\n \nWe begin with this one time Deep Cleaning to fully reset your home, then keep it maintained with our Standard Regular Cleaning ${freqPhrase}.${stdLine}\n \nStandard visits keep every room fresh from top to bottom. The main difference is that interior cabinets, the inside of appliances, and baseboards are NOT included in a Standard Regular Cleaning but are included in a Deep Cleaning. You can add any of those to any cleaning whenever you like.`;
+    const recurExtrasSent=extrasSentence(r.extraLabels);
+    const recurExtrasPart=recurExtrasSent?` ${recurExtrasSent}`:'';
+    const recurBlock=`🔁 How your recurring plan works:\n \nWe begin with this one time Deep Cleaning to fully reset your home, then keep it maintained with our Standard Regular Cleaning ${freqPhrase}.${stdLine}${recurExtrasPart}\n \nStandard visits keep every room fresh from top to bottom. The main difference is that interior cabinets, the inside of appliances, and baseboards are NOT included in a Standard Regular Cleaning but are included in a Deep Cleaning. You can add any of those to any cleaning whenever you like.`;
     msg=msg.replace('We service the',recurBlock+'\n \nWe service the');
   }
   msg+='\n\nLearn more about us at https://beepristine.com/';const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
@@ -1123,7 +1189,7 @@ function resetMediumEventTab(){
 }
 function calcMediumEvent(){const BASE=255,crew=parseInt(document.getElementById('me-crew').value)||2;buildLaborInputs(crew,'me','calcMediumEvent');const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'me');let paramSub=0,paramTime=0;const paramLines=[];['spaces','bathrefresh','multibath','pre','post','stewards'].forEach(k=>{const count=parseInt((document.getElementById('me-'+k)||{value:'0'}).value)||0;if(count>0){const pp=ME_PARAMS[k].price*count,pt=ME_PARAMS[k].time*count;paramSub+=pp;paramTime+=pt;paramLines.push({label:ME_PARAMS[k].label,count,price:pp});}});let extSub=0,extTime=0;const extLines=[];ME_EXTRAS.forEach(e=>{if(e.qty){const qty=parseInt((document.getElementById('me-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}}else{const cb=document.getElementById('me-ex-'+e.id),item=document.getElementById('me-item-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}else if(item)item.classList.remove('selected');}});const totalPrice=BASE+paramSub+extSub,adjTime=Math.max((paramTime+extTime)/crew,3),laborCost=combinedRate*adjTime,supplies=20,totalCost=laborCost+supplies;meAutoPrice=totalPrice;meLastCost=totalCost;const dp=meManualPrice!==null?meManualPrice:totalPrice,taxAmt=dp*TAX,priceWithTax=dp+taxAmt;const profit=dp-totalCost,margin=dp>0?Math.round((profit/dp)*100):0;const out=document.getElementById('me-output');out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="me-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="me-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaners on site</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="me-metric-profit">${fmt(profit)}</div><div class="metric-note" id="me-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Medium Event Cleaning · ${crew} cleaners · up to 30 guests</div><div class="detail-row"><span class="dl">Base price (2 cleaners included)</span><span class="dv">${fmt(BASE)}</span></div>${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}<div class="divider"></div><div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>${buildEditPrice(dp,'onMEPriceOverride','resetMEPrice','me-price-override')}${buildTaxSection(dp,'me-tax-before','me-tax-amt','me-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaners · $${combinedRate.toFixed(2)}/hr combined</span></div><div class="detail-row"><span class="dl">Est. time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>${cleanerRows(laborDetails,adjTime)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="me-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="badges"><span class="badge badge-teal">${crew} cleaners assigned</span><span class="badge badge-teal">${fmtTime(adjTime)} on site</span>${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}</div></div>`;}
 // ── INIT ──
-buildHomeExtras();buildSEExtras();buildMEExtras();
+buildHomeExtras();buildRecurExtras();buildSEExtras();buildMEExtras();
 switchHomeSvc('standard',document.querySelector('#tab-home .sub-tab-btn'));
 document.getElementById('c-room-card').style.display='block';
 document.getElementById('c-extras-card').style.display='block';
