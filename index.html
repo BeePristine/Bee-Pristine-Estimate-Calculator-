@@ -269,6 +269,29 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
       <div class="field"><label>Hours — to (optional, for a range)</label><input type="number" id="h-msg-hrs-to" placeholder="e.g. 5" min="0" max="24" step="0.25"></div>
       <div class="field"><label>Zip Code</label><input type="text" id="h-msg-zip" placeholder="e.g. 77002" maxlength="10"></div>
     </div>
+    <label class="extra-item" id="h-recur-toggle-wrap" style="margin-top:12px;cursor:pointer;">
+      <input type="checkbox" id="h-recur-toggle" style="accent-color:#2A9D8F;width:18px;height:18px;flex-shrink:0;" onchange="document.getElementById('h-recur-fields').style.display=this.checked?'block':'none';updateRecurDisplay()">
+      <span class="extra-label">Add recurring plan note (first visit is a deep clean, then standard upkeep)</span>
+    </label>
+    <div id="h-recur-fields" style="display:none;margin-top:10px;padding:12px;background:#f4f6f9;border-radius:12px;border:0.5px solid #E0E4EA;">
+      <div class="form-title" style="margin-bottom:10px;">Recurring Standard Cleaning (optional)</div>
+      <div class="form-grid">
+        <div class="field"><label>Recurring frequency</label>
+          <select id="h-recur-freq" onchange="updateRecurDisplay()">
+            <option value="0">Select frequency</option>
+            <option value="25">Weekly — 25% off</option>
+            <option value="20">Every two weeks — 20% off</option>
+            <option value="10">Monthly — 10% off</option>
+          </select>
+        </div>
+        <div class="field"><label>Standard hours</label><input type="number" id="h-recur-hrs" value="2" placeholder="e.g. 2.5" min="0" max="24" step="0.25" oninput="updateRecurDisplay()"></div>
+        <div class="field"><label>Standard hours — to (optional)</label><input type="number" id="h-recur-hrs-to" placeholder="e.g. 3" min="0" max="24" step="0.25" oninput="updateRecurDisplay()"></div>
+      </div>
+      <div style="margin-top:10px;padding:9px 13px;background:#fff;border:0.5px solid #A8DBC8;border-radius:10px;font-size:13px;color:#0F6E56;">
+        Calculated price per visit: <strong id="h-recur-price-out">—</strong>
+        <span style="color:#9CA3AF;font-weight:400;"> · based on $55/hr and the selected frequency</span>
+      </div>
+    </div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
       <button class="apply-btn" style="background:#fff;color:#0D1B2A;border:0.5px solid #D1D5DB;" onclick="fillHomeMsgFromCalc()">↺ Use calculator values</button>
       <button class="apply-btn" onclick="generateHomeMessage()">✉️ Generate Message</button>
@@ -683,6 +706,46 @@ function fillHomeMsgFromCalc(){
   const outWrap=document.getElementById('h-msg-output');
   if(outWrap&&outWrap.style.display==='block')generateHomeMessage();
 }
+// ── RECURRING STANDARD PLAN (initial deep clean, then standard upkeep) ──
+function recurFreqPhrase(f){
+  return ({25:'on a weekly schedule',20:'every two weeks',10:'on a monthly schedule'})[f]||'on your schedule (weekly, every two weeks or monthly)';
+}
+function computeRecurStandard(){
+  const RATE=H_SVC.standard.base; // $55/hr, same as the Standard Regular Cleaning rate
+  const f=parseInt((document.getElementById('h-recur-freq')||{value:'0'}).value)||0;
+  const hFrom=parseFloat((document.getElementById('h-recur-hrs')||{value:''}).value);
+  const toRaw=(document.getElementById('h-recur-hrs-to')||{value:''}).value;
+  const hTo=toRaw!==''?parseFloat(toRaw):null;
+  // Price math mirrors the main calculator: base = rate x hours, then subtract the frequency discount.
+  function priceFor(h){const base=RATE*h;const disc=f>0?Math.round(base*(f/100)):0;return Math.round(base-disc);}
+  let priceFrom=null,priceTo=null,hrsText='';
+  if(!isNaN(hFrom)&&hFrom>0){
+    if(hTo!==null&&!isNaN(hTo)&&hTo>0&&hTo!==hFrom){
+      const lo=Math.min(hFrom,hTo),hi=Math.max(hFrom,hTo);
+      hrsText=formatCount(lo)+'-'+formatCount(hi)+' hour';
+      priceFrom=priceFor(lo);priceTo=priceFor(hi);
+    } else {
+      hrsText=formatCount(hFrom)+'-hour';
+      priceFrom=priceFor(hFrom);
+    }
+  }
+  return {f,priceFrom,priceTo,hrsText};
+}
+function recurPriceText(r){
+  if(r.priceFrom===null)return '';
+  if(r.priceTo!==null)return '$'+r.priceFrom.toLocaleString()+' to $'+r.priceTo.toLocaleString();
+  return '$'+r.priceFrom.toLocaleString();
+}
+function updateRecurDisplay(){
+  const out=document.getElementById('h-recur-price-out');
+  if(out){
+    const r=computeRecurStandard();
+    const pt=recurPriceText(r);
+    out.textContent=pt?pt+' per visit':'—';
+  }
+  const msgOut=document.getElementById('h-msg-output');
+  if(msgOut&&msgOut.style.display==='block')generateHomeMessage();
+}
 function generateHomeMessage(){
   const tmpl=H_MESSAGES[hSvc];if(!tmpl)return;
   const bed=parseFloat(document.getElementById('h-msg-bed').value)||0;
@@ -714,6 +777,19 @@ function generateHomeMessage(){
       /For your .+-bedroom, .+-bathroom home, the rate is \$[\d,]+\./,
       m=>m+freqNote
     );
+  }
+  const recur=document.getElementById('h-recur-toggle');
+  if(recur&&recur.checked){
+    const r=computeRecurStandard();
+    const freqPhrase=recurFreqPhrase(r.f);
+    const priceText=recurPriceText(r);
+    const hasP=priceText!=='',hasH=r.hrsText!=='';
+    let stdLine='';
+    if(hasP&&hasH)stdLine=` Your recurring Standard Regular Cleaning is ${priceText} per visit and covers about a ${r.hrsText} cleaning.`;
+    else if(hasP)stdLine=` Your recurring Standard Regular Cleaning is ${priceText} per visit.`;
+    else if(hasH)stdLine=` Your recurring Standard Regular Cleaning covers about a ${r.hrsText} cleaning.`;
+    const recurBlock=`🔁 How your recurring plan works:\n \nWe begin with this one time Deep Cleaning to fully reset your home, then keep it maintained with our Standard Regular Cleaning ${freqPhrase}.${stdLine}\n \nStandard visits keep every room fresh from top to bottom. The main difference is that interior cabinets, the inside of appliances, and baseboards are NOT included in a Standard Regular Cleaning but are included in a Deep Cleaning. You can add any of those to any cleaning whenever you like.`;
+    msg=msg.replace('We service the',recurBlock+'\n \nWe service the');
   }
   msg+='\n\nLearn more about us at https://beepristine.com/';const ta=document.getElementById('h-msg-text');if(ta)ta.value=msg;
   const outWrap=document.getElementById('h-msg-output');if(outWrap)outWrap.style.display='block';
