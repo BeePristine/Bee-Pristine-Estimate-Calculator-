@@ -178,6 +178,7 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('home',this)">🏠 Home</button>
   <button class="tab-btn" onclick="switchTab('commercial',this)">🏢 Commercial</button>
+  <button class="tab-btn" onclick="switchTab('apartment',this)">🏬 Apartments</button>
   <button class="tab-btn" onclick="switchTab('smallevent',this)">🎉 Small Event</button>
   <button class="tab-btn" onclick="switchTab('mediumevent',this)">🎊 Medium Event</button>
 </div>
@@ -407,6 +408,121 @@ input[type=number]:focus,select:focus,input[type=date]:focus,input[type=text]:fo
     </div>
   </div>
 </div>
+<!-- APARTMENT BUILDING TAB -->
+<div class="tab-content" id="tab-apartment">
+  <div class="sub-tab-bar">
+    <button class="sub-tab-btn active" onclick="switchAptSvc('turnover',this)">Unit Turnovers</button>
+    <button class="sub-tab-btn" onclick="switchAptSvc('common',this)">Common Areas</button>
+  </div>
+  <div id="apt-sub-turnover">
+  <div class="form-card">
+    <div class="form-title">Unit Turnovers — flat rate per unit</div>
+    <div class="mode-banner"><strong>For apartment buildings.</strong> Set your flat rate for each unit size, enter how many units of each size, and the calculator totals your turnover quote. The rates below are starting points. Edit them to your real prices.</div>
+    <div class="form-grid">
+      <div class="field"><label>Volume discount (optional)</label>
+        <select id="apt-vol" onchange="calcAptUnits()">
+          <option value="0">None</option>
+          <option value="5">5% off</option>
+          <option value="10">10% off</option>
+          <option value="15">15% off</option>
+          <option value="20">20% off</option>
+        </select>
+      </div>
+    </div>
+    <label class="extra-item" style="margin-top:12px;cursor:pointer;">
+      <input type="checkbox" id="apt-supplies-on" checked onchange="calcAptUnits()" style="accent-color:#2A9D8F;width:18px;height:18px;flex-shrink:0;">
+      <span class="extra-label">Add $15 supplies cost per make-ready unit (optional)</span>
+    </label>
+    <div style="margin-top:14px;">
+      <div style="display:grid;grid-template-columns:1.05fr 0.72fr 0.62fr 0.5fr 0.6fr 0.78fr 0.7fr;gap:6px;padding:0 4px 8px;font-size:10px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:.02em;">
+        <div>Unit size</div><div>Rate each</div><div>Time each</div><div>Crew</div><div>Standard</div><div>Make-ready</div><div style="text-align:right;">Line total</div>
+      </div>
+      <div id="apt-unit-rows"></div>
+      <div style="margin-top:10px;font-size:11.5px;color:#6B7280;line-height:1.5;">For each size, set the time one unit takes on site, the crew you send, and how many are standard versus make-ready. Your paid labor for a unit is time x crew, so 2 cleaners for 2 hours is 4 paid hours. A studio usually needs 1 cleaner, a larger unit may need 2. Make-ready adds $30 per unit for Studio through 2 Bed / 1 Bath and $40 for 2 Bed / 2 Bath and up, and is budgeted a bit more time automatically. Units can run across different days, this totals your overall labor and profit.</div>
+    </div>
+  </div>
+  <div class="form-card" id="apt-labor-card" style="display:none;">
+    <div class="form-title">Labor Rate Per Cleaner</div>
+    <div id="apt-labor-grid" class="labor-grid"></div>
+    <div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Set each cleaner's rate individually. The number shown matches the largest crew you assign. Pay a longer-tenured cleaner more, and your labor cost uses the average of these rates across the paid hours.</div>
+  </div>
+  <div id="apt-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter how many units of each size to build your turnover quote</div></div>
+  <div class="form-card" id="apt-message-card">
+    <div class="form-title">Generate Client Message</div>
+    <div class="mode-banner"><strong>Editable.</strong> Add the property name and zip if you like, then generate a message you can send to the property manager.</div>
+    <div class="form-grid">
+      <div class="field"><label>Property / Contact name (optional)</label><input type="text" id="apt-msg-name" placeholder="e.g. Oakwood Apartments"></div>
+      <div class="field"><label>Zip Code (optional)</label><input type="text" id="apt-msg-zip" placeholder="e.g. 77002" maxlength="10"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+      <button class="apply-btn" onclick="generateAptMessage()">✉️ Generate Message</button>
+    </div>
+    <div id="apt-msg-output" style="display:none;margin-top:12px;">
+      <textarea id="apt-msg-text" readonly style="width:100%;min-height:300px;padding:12px;border:0.5px solid #D1D5DB;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;color:#0D1B2A;line-height:1.5;resize:vertical;"></textarea>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
+        <button class="apply-btn" onclick="copyAptMessage()">📋 Copy to clipboard</button>
+        <span id="apt-msg-copied" style="display:none;font-size:12px;color:#0F6E56;font-weight:500;">Copied!</span>
+      </div>
+    </div>
+  </div>
+  </div><!-- /apt-sub-turnover -->
+  <div id="apt-sub-common" style="display:none;">
+    <div class="form-card">
+      <div class="form-title">Apartment Building Parameters — Standard Regular</div>
+      <div class="mode-banner"><strong>Common areas, recurring clean.</strong> Count the shared spaces and the calculator prices them at our standard rates. Add extras below, set the frequency and crew, and see your profit per visit.</div>
+      <div class="form-grid">
+        <div class="field"><label>Private Offices</label><select id="ca-privateoffice" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div>
+        <div class="field"><label>Conference Rooms</label><select id="ca-conf" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="field"><label>Kitchens / Breakrooms</label><select id="ca-kitchen" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        <div class="field"><label>Standard Bathrooms</label><select id="ca-stdbath" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div class="field"><label>Multi User Bathrooms</label><select id="ca-multibath" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        <div class="field"><label>Reception / Lobby</label><select id="ca-lobby" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option></select></div>
+        <div class="field"><label>Gym</label><select id="ca-gym" onchange="calcAptCA()"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+      </div>
+      <div class="form-grid" style="margin-top:12px;">
+        <div class="field"><label>Booking frequency</label>
+          <select id="ca-freq" onchange="calcAptCA()">
+            <option value="0">One-time / As needed</option>
+            <option value="10">Monthly — 10% off</option>
+            <option value="20">Weekly — 20% off</option>
+            <option value="22">2x per week — 22% off</option>
+            <option value="25">3x per week — 25% off</option>
+          </select>
+        </div>
+        <div class="field"><label>Crew size</label>
+          <select id="ca-crew" onchange="calcAptCA()">
+            <option value="1">1 cleaner</option>
+            <option value="2" selected>2 cleaners</option>
+            <option value="3">3 cleaners</option>
+            <option value="4">4 cleaners</option>
+          </select>
+        </div>
+      </div>
+      <div class="time-override-wrap" id="ca-time-row" style="display:none;">
+        <label>Est. hours</label>
+        <input type="number" id="ca-time" min="0.25" max="99" step="0.25" oninput="onCATimeChange()" placeholder="0.00">
+        <span style="font-size:11px;color:#9CA3AF;flex:1;">hrs (auto · edit to override)</span>
+        <button class="time-reset" onclick="resetCATime()">↺ Reset</button>
+      </div>
+    </div>
+    <div class="form-card"><div class="form-title">Extras</div><div class="extras-grid" id="ca-extras-grid"></div></div>
+    <div class="form-card" id="ca-labor-card" style="display:none;"><div class="form-title">Labor Rate Per Cleaner</div><div id="ca-labor-grid" class="labor-grid"></div><div style="margin-top:8px;font-size:11px;color:#9CA3AF;">Set each cleaner's rate individually. Rates update when crew size changes.</div></div>
+    <div id="ca-output"><div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Count the common areas to build your estimate</div></div>
+    <div class="form-card" id="ca-message-card">
+      <div class="form-title">Generate Client Message</div>
+      <div class="mode-banner"><strong>Editable.</strong> Add the property name and zip if you like, then generate a message.</div>
+      <div class="form-grid">
+        <div class="field"><label>Property / Contact name (optional)</label><input type="text" id="ca-msg-name" placeholder="e.g. Oakwood Apartments"></div>
+        <div class="field"><label>Zip Code (optional)</label><input type="text" id="ca-msg-zip" placeholder="e.g. 77002" maxlength="10"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><button class="apply-btn" onclick="generateCAMessage()">✉️ Generate Message</button></div>
+      <div id="ca-msg-output" style="display:none;margin-top:12px;">
+        <textarea id="ca-msg-text" readonly style="width:100%;min-height:300px;padding:12px;border:0.5px solid #D1D5DB;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;color:#0D1B2A;line-height:1.5;resize:vertical;"></textarea>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;"><button class="apply-btn" onclick="copyCAMessage()">📋 Copy to clipboard</button><span id="ca-msg-copied" style="display:none;font-size:12px;color:#0F6E56;font-weight:500;">Copied!</span></div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- SMALL EVENT TAB -->
 <div class="tab-content" id="tab-smallevent">
   <div class="form-card">
@@ -490,6 +606,8 @@ function switchTab(id,btn){
   } else if(id==='home'){
     const firstSub=document.querySelector('#tab-home .sub-tab-btn');
     switchHomeSvc('standard',firstSub);
+  } else if(id==='apartment'){
+    resetApartmentTab();
   } else if(id==='smallevent'){
     resetSmallEventTab();
   } else if(id==='mediumevent'){
@@ -1188,13 +1306,266 @@ function resetMediumEventTab(){
   calcMediumEvent();
 }
 function calcMediumEvent(){const BASE=255,crew=parseInt(document.getElementById('me-crew').value)||2;buildLaborInputs(crew,'me','calcMediumEvent');const {combined:combinedRate,details:laborDetails}=getLaborRates(crew,'me');let paramSub=0,paramTime=0;const paramLines=[];['spaces','bathrefresh','multibath','pre','post','stewards'].forEach(k=>{const count=parseInt((document.getElementById('me-'+k)||{value:'0'}).value)||0;if(count>0){const pp=ME_PARAMS[k].price*count,pt=ME_PARAMS[k].time*count;paramSub+=pp;paramTime+=pt;paramLines.push({label:ME_PARAMS[k].label,count,price:pp});}});let extSub=0,extTime=0;const extLines=[];ME_EXTRAS.forEach(e=>{if(e.qty){const qty=parseInt((document.getElementById('me-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({...e,qty,totalPrice:e.price*qty});}}else{const cb=document.getElementById('me-ex-'+e.id),item=document.getElementById('me-item-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({...e,qty:1,totalPrice:e.price});if(item)item.classList.add('selected');}else if(item)item.classList.remove('selected');}});const totalPrice=BASE+paramSub+extSub,adjTime=Math.max((paramTime+extTime)/crew,3),laborCost=combinedRate*adjTime,supplies=20,totalCost=laborCost+supplies;meAutoPrice=totalPrice;meLastCost=totalCost;const dp=meManualPrice!==null?meManualPrice:totalPrice,taxAmt=dp*TAX,priceWithTax=dp+taxAmt;const profit=dp-totalCost,margin=dp>0?Math.round((profit/dp)*100):0;const out=document.getElementById('me-output');out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Your quote</div><div class="metric-val teal" id="me-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="me-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(adjTime)}</div><div class="metric-note">${crew} cleaners on site</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="me-metric-profit">${fmt(profit)}</div><div class="metric-note" id="me-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Medium Event Cleaning · ${crew} cleaners · up to 30 guests</div><div class="detail-row"><span class="dl">Base price (2 cleaners included)</span><span class="dv">${fmt(BASE)}</span></div>${paramLines.length>0?`<div class="divider"></div>${paramLines.map(p=>`<div class="detail-row"><span class="dl">${p.label} (${p.count})</span><span class="dv">+${fmt(p.price)}</span></div>`).join('')}`:''}${extLines.length>0?`<div class="divider"></div>${extLines.map(e=>`<div class="detail-row"><span class="dl">${e.label}${e.qty>1?' ('+e.qty+')':''}</span><span class="dv">+${fmt(e.totalPrice)}</span></div>`).join('')}`:''}<div class="divider"></div><div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(totalPrice)}</span></div>${buildEditPrice(dp,'onMEPriceOverride','resetMEPrice','me-price-override')}${buildTaxSection(dp,'me-tax-before','me-tax-amt','me-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Crew</span><span class="dv">${crew} cleaners · $${combinedRate.toFixed(2)}/hr combined</span></div><div class="detail-row"><span class="dl">Est. time on site</span><span class="dv">${fmtTime(adjTime)}</span></div>${cleanerRows(laborDetails,adjTime)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="me-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="badges"><span class="badge badge-teal">${crew} cleaners assigned</span><span class="badge badge-teal">${fmtTime(adjTime)} on site</span>${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}</div></div>`;}
+// ── APARTMENT BUILDING (Unit Turnovers) ──
+// Flat rate per unit by size, with a labor-time budget per size that drives margin.
+// Rates and times are starting points; all editable in the UI.
+// std = standard turnover rate; dup = make-ready uplift added to std to get the deep rate.
+const APT_SIZES=[
+  {id:'studio',label:'Studio',std:110,dup:30,stdT:2.0,deepT:3.0,dcrew:1},
+  {id:'u1_1',label:'1 Bed / 1 Bath',std:130,dup:30,stdT:2.5,deepT:3.75,dcrew:1},
+  {id:'u2_1',label:'2 Bed / 1 Bath',std:150,dup:30,stdT:3.0,deepT:4.5,dcrew:1},
+  {id:'u2_2',label:'2 Bed / 2 Bath',std:170,dup:40,stdT:3.5,deepT:5.0,dcrew:2},
+  {id:'u3_2',label:'3 Bed / 2 Bath',std:195,dup:40,stdT:4.5,deepT:6.5,dcrew:2},
+  {id:'u3_3',label:'3 Bed / 3 Bath',std:215,dup:40,stdT:5.0,deepT:7.0,dcrew:2}
+];
+let aptAutoPrice=0,aptManualPrice=null,aptLastCost=0;
+function buildAptUnitRows(){
+  const wrap=document.getElementById('apt-unit-rows');if(!wrap)return;wrap.innerHTML='';
+  APT_SIZES.forEach(s=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1.05fr 0.72fr 0.62fr 0.5fr 0.6fr 0.78fr 0.7fr;gap:6px;align-items:center;padding:9px 4px;border-top:0.5px solid #EEF1F4;';
+    row.innerHTML=`<div style="font-size:12px;font-weight:500;color:#0D1B2A;">${s.label}<span style="display:block;font-size:9.5px;color:#9CA3AF;font-weight:400;">make-ready +$${s.dup}</span></div>`+
+      `<div class="labor-input-wrap" style="margin:0;"><span>$</span><input type="number" id="apt-rate-${s.id}" value="${s.std}" min="0" max="2000" step="5" inputmode="decimal" oninput="calcAptUnits()" style="padding-left:20px;"></div>`+
+      `<div style="position:relative;"><input type="number" id="apt-time-${s.id}" value="${s.stdT}" min="0" max="24" step="0.25" inputmode="decimal" oninput="calcAptUnits()" style="padding-right:15px;"><span style="position:absolute;right:5px;top:50%;transform:translateY(-50%);font-size:10px;color:#9CA3AF;pointer-events:none;">h</span></div>`+
+      `<input type="number" id="apt-crew-${s.id}" value="${s.dcrew}" min="1" max="4" step="1" inputmode="numeric" oninput="calcAptUnits()">`+
+      `<input type="number" id="apt-qty-${s.id}" value="0" min="0" max="999" step="1" inputmode="numeric" oninput="calcAptUnits()">`+
+      `<input type="number" id="apt-dqty-${s.id}" value="0" min="0" max="999" step="1" inputmode="numeric" oninput="calcAptUnits()">`+
+      `<div id="apt-line-${s.id}" style="text-align:right;font-size:12.5px;font-weight:600;color:#0D1B2A;">$0</div>`;
+    wrap.appendChild(row);
+  });
+}
+function onAptPriceOverride(v){const val=parseFloat(v);aptManualPrice=(!isNaN(val)&&val>=0)?val:null;updateAptTax();}
+function resetAptPrice(){aptManualPrice=null;const el=document.getElementById('apt-price-override');if(el)el.value=aptAutoPrice.toFixed(2);updateAptTax();}
+function updateAptTax(){
+  const dp=aptManualPrice!==null?aptManualPrice:aptAutoPrice;
+  const t=dp*TAX,w=dp+t,np=dp-aptLastCost,nm=dp>0?Math.round((np/dp)*100):0;
+  [['apt-tax-before',fmtFull(dp)],['apt-tax-amt','+ $'+t.toFixed(2)],['apt-tax-total',fmtFull(w)],['apt-metric-quote',fmtFull(dp)],['apt-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],['apt-metric-profit','$'+Math.round(np).toLocaleString()],['apt-metric-margin',nm+'% margin'],['apt-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});
+  const pm=document.getElementById('apt-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');
+}
+function getAptData(){
+  const vol=parseInt((document.getElementById('apt-vol')||{value:'0'}).value)||0;
+  const supOn=(document.getElementById('apt-supplies-on')||{checked:false}).checked;
+  let units=0,stdUnits=0,deepUnits=0,subtotal=0,cleanerHours=0,onSiteHours=0,maxCrew=1;const lines=[];
+  APT_SIZES.forEach(s=>{
+    const rate=parseFloat((document.getElementById('apt-rate-'+s.id)||{value:'0'}).value)||0;
+    const dRate=rate+s.dup;
+    const time=parseFloat((document.getElementById('apt-time-'+s.id)||{value:'0'}).value)||0;
+    const crew=parseInt((document.getElementById('apt-crew-'+s.id)||{value:'1'}).value)||1;
+    const qty=parseInt((document.getElementById('apt-qty-'+s.id)||{value:'0'}).value)||0;
+    const dqty=parseInt((document.getElementById('apt-dqty-'+s.id)||{value:'0'}).value)||0;
+    if((qty>0||dqty>0)&&crew>maxCrew)maxCrew=crew;
+    const lineStd=rate*qty,lineDeep=dRate*dqty,line=lineStd+lineDeep;
+    const lt=document.getElementById('apt-line-'+s.id);if(lt)lt.textContent=fmt(line);
+    if(qty>0){units+=qty;stdUnits+=qty;subtotal+=lineStd;cleanerHours+=time*crew*qty;onSiteHours+=time*qty;lines.push({label:s.label,kind:'Standard',rate,qty,line:lineStd});}
+    if(dqty>0){units+=dqty;deepUnits+=dqty;subtotal+=lineDeep;cleanerHours+=s.deepT*crew*dqty;onSiteHours+=s.deepT*dqty;lines.push({label:s.label,kind:'Make-Ready',rate:dRate,qty:dqty,line:lineDeep});}
+  });
+  const discAmt=vol>0?Math.round(subtotal*(vol/100)):0;
+  const price=subtotal-discAmt;
+  const suppliesTotal=supOn?15*deepUnits:0;
+  return {vol,units,stdUnits,deepUnits,subtotal,discAmt,price,lines,supOn,suppliesTotal,cleanerHours,onSiteHours,maxCrew};
+}
+function calcAptUnits(){
+  const d=getAptData();
+  aptAutoPrice=d.price;
+  const out=document.getElementById('apt-output');if(!out)return;
+  if(d.units===0){
+    aptManualPrice=null;aptLastCost=0;
+    const lg=document.getElementById('apt-labor-grid');if(lg)lg.innerHTML='';
+    const lc=document.getElementById('apt-labor-card');if(lc)lc.style.display='none';
+    out.innerHTML=`<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Enter how many units of each size to build your turnover quote</div>`;return;
+  }
+  // Per-cleaner rates: show one rate per cleaner for the largest crew, average them across the paid hours.
+  buildLaborInputs(d.maxCrew,'apt','calcAptUnits');
+  const {combined:combinedRate}=getLaborRates(d.maxCrew,'apt');
+  const avgRate=d.maxCrew>0?combinedRate/d.maxCrew:combinedRate;
+  const laborCost=avgRate*d.cleanerHours;
+  const totalCost=laborCost+d.suppliesTotal;
+  aptLastCost=totalCost;
+  const dp=aptManualPrice!==null?aptManualPrice:d.price;
+  const taxAmt=dp*TAX,priceWithTax=dp+taxAmt;
+  const profit=dp-totalCost,margin=dp>0?Math.round((profit/dp)*100):0;
+  const breakevenHours=avgRate>0?Math.max(0,(dp-d.suppliesTotal)/avgRate):0;
+  const lineRows=d.lines.map(l=>`<div class="detail-row"><span class="dl">${l.qty} x ${l.label}${l.kind==='Make-Ready'?' <span style="color:#0F6E56;font-weight:600">(make ready)</span>':''} @ ${fmt(l.rate)} each</span><span class="dv">${fmt(l.line)}</span></div>`).join('');
+  out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Turnover quote</div><div class="metric-val teal" id="apt-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="apt-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Paid labor</div><div class="metric-val">${fmtTime(d.cleanerHours)}</div><div class="metric-note">cleaner hours · ${d.units} unit${d.units>1?'s':''}</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="apt-metric-profit">${fmt(profit)}</div><div class="metric-note" id="apt-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Unit Turnovers · ${d.units} unit${d.units>1?'s':''}</div>${lineRows}<div class="divider"></div><div class="detail-row"><span class="dl">Subtotal</span><span class="dv">${fmt(d.subtotal)}</span></div>${d.discAmt>0?`<div class="detail-row"><span class="dl">Volume discount (${d.vol}%)</span><span class="dv">− ${fmt(d.discAmt)}</span></div>`:''}<div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(d.price)}</span></div>${buildEditPrice(dp,'onAptPriceOverride','resetAptPrice','apt-price-override')}${buildTaxSection(dp,'apt-tax-before','apt-tax-amt','apt-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">On-site hours (all units)</span><span class="dv">${fmtTime(d.onSiteHours)}</span></div><div class="detail-row"><span class="dl">Paid labor hours (time × crew)</span><span class="dv">${fmtTime(d.cleanerHours)}</span></div><div class="detail-row"><span class="dl">Avg cleaner rate (${d.maxCrew} cleaner${d.maxCrew>1?'s':''})</span><span class="dv">$${avgRate.toFixed(2)}/hr</span></div><div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies${(d.supOn&&d.deepUnits>0)?' ('+d.deepUnits+' make-ready × $15)':''}</span><span class="dv">${fmt(d.suppliesTotal)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="apt-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="detail-row"><span class="dl">Breakeven labor hours</span><span class="dv">${fmtTime(breakevenHours)} total${d.units>0?' · '+fmtTime(breakevenHours/d.units)+' per unit':''}</span></div><div class="badges">${d.stdUnits>0?`<span class="badge badge-teal">${d.stdUnits} standard</span>`:''}${d.deepUnits>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${d.deepUnits} make-ready</span>`:''}${d.vol>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${d.vol}% volume discount</span>`:''}${margin<30?'<span class="badge badge-red">Low margin — review time or price</span>':''}</div></div>`;
+}
+function resetApartmentTab(){
+  const vol=document.getElementById('apt-vol');if(vol)vol.value='0';
+  const so=document.getElementById('apt-supplies-on');if(so)so.checked=true;
+  const lg=document.getElementById('apt-labor-grid');if(lg)lg.innerHTML='';
+  buildAptUnitRows();
+  aptManualPrice=null;
+  const mo=document.getElementById('apt-msg-output');if(mo)mo.style.display='none';
+  const nm=document.getElementById('apt-msg-name');if(nm)nm.value='';
+  const zp=document.getElementById('apt-msg-zip');if(zp)zp.value='';
+  resetCommonAreas();
+  // Start on the Unit Turnovers sub-tab.
+  const subs=document.querySelectorAll('#tab-apartment .sub-tab-btn');subs.forEach(b=>b.classList.remove('active'));if(subs[0])subs[0].classList.add('active');
+  const st=document.getElementById('apt-sub-turnover');if(st)st.style.display='block';
+  const sc=document.getElementById('apt-sub-common');if(sc)sc.style.display='none';
+  calcAptUnits();
+}
+function generateAptMessage(){
+  const d=getAptData();
+  const name=((document.getElementById('apt-msg-name')||{value:''}).value||'').trim();
+  const zip=((document.getElementById('apt-msg-zip')||{value:''}).value||'').trim();
+  const dp=aptManualPrice!==null?aptManualPrice:d.price;
+  let msg=`Thank you for reaching out to Bee Pristine!\n \n`;
+  msg+=name?`We would be glad to handle the unit turnovers at ${name}. Here is your estimate.\n \n`:`We would be glad to handle your unit turnovers. Here is your estimate.\n \n`;
+  msg+=`Each turnover is a full clean to get the unit rent ready. Here is what is included:\n \n`;
+  msg+=`• Kitchen: all appliances cleaned inside and out, cabinets, counters and sink\n`;
+  msg+=`• Bathrooms: tubs, showers, toilets, vanities and mirrors sanitized\n`;
+  msg+=`• Bedrooms, living areas and closets cleaned top to bottom\n`;
+  msg+=`• Baseboards, doors, light switches, outlets and vents\n`;
+  msg+=`• Interior windows, sills, tracks and blinds\n`;
+  msg+=`• Floors vacuumed and mopped throughout\n \n`;
+  const stdLines=d.lines.filter(l=>l.kind==='Standard');
+  const deepLines=d.lines.filter(l=>l.kind==='Make-Ready');
+  if(stdLines.length){
+    msg+=`Standard turnovers:\n`;
+    stdLines.forEach(l=>{msg+=`• ${l.qty} x ${l.label} at ${fmt(l.rate)} each: ${fmt(l.line)}\n`;});
+    msg+=` \n`;
+  }
+  if(deepLines.length){
+    msg+=`Deep make-ready turnovers (for units in heavier condition):\n`;
+    deepLines.forEach(l=>{msg+=`• ${l.qty} x ${l.label} at ${fmt(l.rate)} each: ${fmt(l.line)}\n`;});
+    msg+=` \n`;
+  }
+  msg+=`Total units: ${d.units}\n`;
+  if(d.discAmt>0){msg+=`Subtotal: ${fmt(d.subtotal)}\nVolume discount (${d.vol}%): ${fmt(d.discAmt)} off\n`;}
+  msg+=`Turnover total: ${fmt(dp)}\n \n`;
+  if(zip)msg+=`We service the ${zip} area. `;
+  msg+=`When are the units expected to be ready for cleaning?\n \n`;
+  msg+=`Do you have a few minutes for a quick call today? We would love to go over the details. We can be reached at 832-843-1948.`;
+  msg+='\n\nLearn more about us at https://beepristine.com/';
+  const ta=document.getElementById('apt-msg-text');if(ta)ta.value=msg;
+  const box=document.getElementById('apt-msg-output');if(box)box.style.display='block';
+}
+function copyAptMessage(){
+  const ta=document.getElementById('apt-msg-text');if(!ta)return;
+  const showCopied=()=>{const cp=document.getElementById('apt-msg-copied');if(cp){cp.style.display='inline';setTimeout(()=>{cp.style.display='none';},2000);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(showCopied).catch(()=>{ta.select();document.execCommand('copy');showCopied();});}
+  else{ta.select();document.execCommand('copy');showCopied();}
+}
+// ── APARTMENT COMMON AREAS (Standard Regular, matches commercial office pricing) ──
+const APT_CA_PARAMS={privateoffice:{label:"Private Office",price:45,time:0.75},conf:{label:"Conference Room",price:60,time:1.0},kitchen:{label:"Kitchen/Breakroom",price:50,time:1.0},stdbath:{label:"Standard Bathroom",price:55,time:0.75},multibath:{label:"Multi User Bathroom",price:90,time:1.5},lobby:{label:"Reception/Lobby",price:50,time:1.0},gym:{label:"Gym",price:55,time:1.25}};
+const CA_PARAM_KEYS=['privateoffice','conf','kitchen','stdbath','multibath','lobby','gym'];
+let caAutoPrice=0,caManualPrice=null,caLastCost=0,caManualTime=null;
+function switchAptSvc(sv,btn){
+  document.querySelectorAll('#tab-apartment .sub-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const t=document.getElementById('apt-sub-turnover'),c=document.getElementById('apt-sub-common');
+  if(t)t.style.display=sv==='turnover'?'block':'none';
+  if(c)c.style.display=sv==='common'?'block':'none';
+  if(sv==='turnover')calcAptUnits();else calcAptCA();
+}
+function buildAptCAExtras(){
+  const grid=document.getElementById('ca-extras-grid');if(!grid)return;grid.innerHTML='';
+  C_EXTRAS.forEach(e=>{
+    const div=document.createElement('div');div.className='extra-item';div.id='ca-item-'+e.id;
+    if(e.qty){
+      div.innerHTML=`<span class="extra-label">${e.label}</span><div style="display:flex;align-items:center;gap:5px;"><button onclick="caChangeQty('${e.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">−</button><span id="ca-qty-${e.id}" style="min-width:20px;text-align:center;font-weight:600;font-size:13px;">0</span><button onclick="caChangeQty('${e.id}',1)" style="width:28px;height:28px;border-radius:50%;border:0.5px solid #D1D5DB;background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">+</button><span class="extra-price">$${e.price}/ea</span></div>`;
+    }else{
+      div.innerHTML=`<input type="checkbox" id="ca-ex-${e.id}" onchange="calcAptCA()"><span class="extra-label">${e.label}</span><span class="extra-price">+$${e.price}</span>`;
+      div.onclick=function(ev){if(ev.target.type!=='checkbox'){const cb=document.getElementById('ca-ex-'+e.id);cb.checked=!cb.checked;calcAptCA();}div.classList.toggle('selected',document.getElementById('ca-ex-'+e.id).checked);};
+    }
+    grid.appendChild(div);
+  });
+}
+function caChangeQty(id,delta){const el=document.getElementById('ca-qty-'+id),nv=Math.max(0,(parseInt(el.textContent)||0)+delta);el.textContent=nv;document.getElementById('ca-item-'+id).classList.toggle('selected',nv>0);calcAptCA();}
+function getCAData(){
+  const freq=parseInt((document.getElementById('ca-freq')||{value:'0'}).value)||0;
+  const crew=parseInt((document.getElementById('ca-crew')||{value:'1'}).value)||1;
+  let paramSub=0,paramTime=0;const paramLines=[];
+  CA_PARAM_KEYS.forEach(k=>{
+    const count=parseInt((document.getElementById('ca-'+k)||{value:'0'}).value)||0;
+    if(count>0){const pp=APT_CA_PARAMS[k].price*count,pt=APT_CA_PARAMS[k].time*count;paramSub+=pp;paramTime+=pt;paramLines.push({label:APT_CA_PARAMS[k].label,count,price:pp});}
+  });
+  let extSub=0,extTime=0;const extLines=[];
+  C_EXTRAS.forEach(e=>{
+    if(e.qty){const qty=parseInt((document.getElementById('ca-qty-'+e.id)||{textContent:'0'}).textContent)||0;if(qty>0){extSub+=e.price*qty;extTime+=e.time*qty;extLines.push({label:e.label,qty,price:e.price*qty});}}
+    else{const cb=document.getElementById('ca-ex-'+e.id);if(cb&&cb.checked){extSub+=e.price;extTime+=e.time;extLines.push({label:e.label,qty:1,price:e.price});}}
+  });
+  const preTotal=paramSub+extSub;
+  const discAmt=freq>0?Math.round(preTotal*(freq/100)):0;
+  const price=preTotal-discAmt;
+  const workHours=paramTime+extTime;
+  const autoDuration=crew>0?workHours/crew:workHours;
+  return {freq,crew,paramLines,extLines,paramSub,extSub,preTotal,discAmt,price,workHours,autoDuration};
+}
+function onCATimeChange(){const v=parseFloat(document.getElementById('ca-time').value);caManualTime=(!isNaN(v)&&v>=0)?v:null;calcAptCA();}
+function resetCATime(){caManualTime=null;calcAptCA();}
+function onCAPriceOverride(v){const val=parseFloat(v);caManualPrice=(!isNaN(val)&&val>=0)?val:null;updateCATax();}
+function resetCAPrice(){caManualPrice=null;const el=document.getElementById('ca-price-override');if(el)el.value=caAutoPrice.toFixed(2);updateCATax();}
+function updateCATax(){const dp=caManualPrice!==null?caManualPrice:caAutoPrice,t=dp*TAX,w=dp+t,np=dp-caLastCost,nm=dp>0?Math.round((np/dp)*100):0;[['ca-tax-before',fmtFull(dp)],['ca-tax-amt','+ $'+t.toFixed(2)],['ca-tax-total',fmtFull(w)],['ca-metric-quote',fmtFull(dp)],['ca-metric-tax','+ $'+t.toFixed(2)+' tax = '+fmtFull(w)],['ca-metric-profit','$'+Math.round(np).toLocaleString()],['ca-metric-margin',nm+'% margin'],['ca-profit-row','$'+Math.round(np).toLocaleString()+' ('+nm+'% margin)']].forEach(([id,v])=>{const el=document.getElementById(id);if(el)el.textContent=v;});const pm=document.getElementById('ca-metric-profit');if(pm)pm.className='metric-val '+(nm>=40?'teal':'amber');}
+function calcAptCA(){
+  const d=getCAData();
+  caAutoPrice=d.price;
+  const out=document.getElementById('ca-output');if(!out)return;
+  const hasAny=d.paramLines.length>0||d.extLines.length>0;
+  if(!hasAny){
+    caManualPrice=null;caLastCost=0;caManualTime=null;
+    const tRow=document.getElementById('ca-time-row');if(tRow)tRow.style.display='none';
+    const lg=document.getElementById('ca-labor-grid');if(lg)lg.innerHTML='';
+    const lc=document.getElementById('ca-labor-card');if(lc)lc.style.display='none';
+    out.innerHTML=`<div class="placeholder"><span style="font-size:32px;display:block;margin-bottom:10px">🐝</span>Count the common areas to build your estimate</div>`;return;
+  }
+  const duration=caManualTime!==null?caManualTime:d.autoDuration;
+  const tRow=document.getElementById('ca-time-row');if(tRow)tRow.style.display='flex';
+  const tEl=document.getElementById('ca-time');if(tEl&&caManualTime===null)tEl.value=duration.toFixed(2);
+  buildLaborInputs(d.crew,'ca','calcAptCA');
+  const {combined:combinedRate,details:laborDetails}=getLaborRates(d.crew,'ca');
+  const laborCost=combinedRate*duration;
+  const supplies=10;
+  const totalCost=laborCost+supplies;
+  caLastCost=totalCost;
+  const dp=caManualPrice!==null?caManualPrice:d.price;
+  const taxAmt=dp*TAX,priceWithTax=dp+taxAmt;
+  const profit=dp-totalCost,margin=dp>0?Math.round((profit/dp)*100):0;
+  const freqLabel={0:'One-time',10:'Monthly plan',20:'Weekly plan',22:'2x per week',25:'3x per week'}[d.freq]||'One-time';
+  const paramRows=d.paramLines.map(l=>`<div class="detail-row"><span class="dl">${l.label} (${l.count})</span><span class="dv">${fmt(l.price)}</span></div>`).join('');
+  const extRows=d.extLines.map(l=>`<div class="detail-row"><span class="dl">${l.label}${l.qty>1?' ('+l.qty+')':''}</span><span class="dv">+${fmt(l.price)}</span></div>`).join('');
+  out.innerHTML=`<div class="result-grid"><div class="metric"><div class="metric-label">Common areas quote</div><div class="metric-val teal" id="ca-metric-quote">${fmtFull(dp)}</div><div class="metric-note" id="ca-metric-tax">+ $${taxAmt.toFixed(2)} tax = ${fmtFull(priceWithTax)}</div></div><div class="metric"><div class="metric-label">Est. duration</div><div class="metric-val">${fmtTime(duration)}${caManualTime!==null?' *':''}</div><div class="metric-note">${d.crew} cleaner${d.crew>1?'s':''}${caManualTime!==null?' · edited':''}</div></div><div class="metric"><div class="metric-label">Your profit</div><div class="metric-val ${margin>=40?'teal':'amber'}" id="ca-metric-profit">${fmt(profit)}</div><div class="metric-note" id="ca-metric-margin">${margin}% margin</div></div></div><div class="detail-card"><div class="detail-title">Common Areas · ${freqLabel}</div>${paramRows}${extRows?`<div class="divider"></div>${extRows}`:''}<div class="divider"></div><div class="detail-row"><span class="dl">Subtotal</span><span class="dv">${fmt(d.preTotal)}</span></div>${d.discAmt>0?`<div class="detail-row"><span class="dl">Frequency discount (${d.freq}%)</span><span class="dv">− ${fmt(d.discAmt)}</span></div>`:''}<div class="detail-row"><span class="dl">Calculated price</span><span class="dv green" style="font-size:14px">${fmt(d.price)}</span></div>${buildEditPrice(dp,'onCAPriceOverride','resetCAPrice','ca-price-override')}${buildTaxSection(dp,'ca-tax-before','ca-tax-amt','ca-tax-total')}<div class="divider"></div><div class="detail-row"><span class="dl">Estimated time (${d.crew} crew)${caManualTime!==null?' · edited':''}</span><span class="dv">${fmtTime(duration)}</span></div>${cleanerRows(laborDetails,d.duration)}<div class="detail-row"><span class="dl">Labor cost</span><span class="dv">${fmt(laborCost)}</span></div><div class="detail-row"><span class="dl">Supplies</span><span class="dv">${fmt(supplies)}</span></div><div class="detail-row"><span class="dl">Total cost to you</span><span class="dv">${fmt(totalCost)}</span></div><div class="detail-row"><span class="dl">Your profit</span><span class="dv green" id="ca-profit-row">${fmt(profit)} (${margin}% margin)</span></div><div class="badges"><span class="badge badge-teal">${freqLabel}</span>${d.freq>0?`<span class="badge" style="background:#E1F5EE;color:#0F6E56">${d.freq}% discount</span>`:''}${margin<30?'<span class="badge badge-red">Low margin — review pricing</span>':''}</div></div>`;
+}
+function resetCommonAreas(){
+  CA_PARAM_KEYS.forEach(k=>{const el=document.getElementById('ca-'+k);if(el)el.value='0';});
+  const fr=document.getElementById('ca-freq');if(fr)fr.value='0';
+  const cr=document.getElementById('ca-crew');if(cr)cr.value='2';
+  C_EXTRAS.forEach(e=>{if(e.qty){const el=document.getElementById('ca-qty-'+e.id);if(el)el.textContent='0';const it=document.getElementById('ca-item-'+e.id);if(it)it.classList.remove('selected');}else{const cb=document.getElementById('ca-ex-'+e.id);if(cb)cb.checked=false;const it=document.getElementById('ca-item-'+e.id);if(it)it.classList.remove('selected');}});
+  const lg=document.getElementById('ca-labor-grid');if(lg)lg.innerHTML='';
+  caManualPrice=null;caManualTime=null;
+  const mo=document.getElementById('ca-msg-output');if(mo)mo.style.display='none';
+  const nm=document.getElementById('ca-msg-name');if(nm)nm.value='';
+  const zp=document.getElementById('ca-msg-zip');if(zp)zp.value='';
+  calcAptCA();
+}
+function generateCAMessage(){
+  const d=getCAData();
+  const name=((document.getElementById('ca-msg-name')||{value:''}).value||'').trim();
+  const zip=((document.getElementById('ca-msg-zip')||{value:''}).value||'').trim();
+  const dp=caManualPrice!==null?caManualPrice:d.price;
+  const freqWord={0:'one-time',10:'monthly',20:'weekly',22:'twice a week',25:'three times a week'}[d.freq]||'one-time';
+  let msg=`Thank you for reaching out to Bee Pristine!\n \n`;
+  msg+=name?`We would be glad to keep the common areas at ${name} clean. Here is your estimate.\n \n`:`We would be glad to keep your common areas clean. Here is your estimate.\n \n`;
+  msg+=`Service: Standard Regular Cleaning of your shared spaces, ${freqWord}.\n \n`;
+  if(d.paramLines.length){msg+=`Areas included:\n`;d.paramLines.forEach(l=>{msg+=`• ${l.label}${l.count>1?' ('+l.count+')':''}\n`;});msg+=` \n`;}
+  if(d.extLines.length){msg+=`Add-ons:\n`;d.extLines.forEach(l=>{msg+=`• ${l.label}${l.qty>1?' ('+l.qty+')':''}: ${fmt(l.price)}\n`;});msg+=` \n`;}
+  if(d.discAmt>0){msg+=`Subtotal: ${fmt(d.preTotal)}\nFrequency discount (${d.freq}%): ${fmt(d.discAmt)} off\n`;}
+  msg+=`Price per visit: ${fmt(dp)}\n \n`;
+  if(zip)msg+=`We service the ${zip} area. `;
+  msg+=`When would you like to start?\n \n`;
+  msg+=`Do you have a few minutes for a quick call today? We can be reached at 832-843-1948.`;
+  msg+='\n\nLearn more about us at https://beepristine.com/';
+  const ta=document.getElementById('ca-msg-text');if(ta)ta.value=msg;
+  const box=document.getElementById('ca-msg-output');if(box)box.style.display='block';
+}
+function copyCAMessage(){const ta=document.getElementById('ca-msg-text');if(!ta)return;const showCopied=()=>{const cp=document.getElementById('ca-msg-copied');if(cp){cp.style.display='inline';setTimeout(()=>{cp.style.display='none';},2000);}};if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(showCopied).catch(()=>{ta.select();document.execCommand('copy');showCopied();});}else{ta.select();document.execCommand('copy');showCopied();}}
 // ── INIT ──
-buildHomeExtras();buildRecurExtras();buildSEExtras();buildMEExtras();
+buildHomeExtras();buildRecurExtras();buildSEExtras();buildMEExtras();buildAptUnitRows();buildAptCAExtras();
 switchHomeSvc('standard',document.querySelector('#tab-home .sub-tab-btn'));
 document.getElementById('c-room-card').style.display='block';
 document.getElementById('c-extras-card').style.display='block';
 buildCommExtras();
-calcHome();calcSmallEvent();calcMediumEvent();
+calcHome();calcSmallEvent();calcMediumEvent();calcAptUnits();calcAptCA();
 </script>
 </body>
 </html>
